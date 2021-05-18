@@ -1,3 +1,3 @@
-# DKE template repository
+# Generic DKE template
 
-This is a template repository
+This is a generic template for any DKE app
