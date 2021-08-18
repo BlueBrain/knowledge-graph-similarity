@@ -66,7 +66,9 @@ deploy-production:
 # CI_REGISTRY_IMAGE: docker-registry-default.ocp.bbp.epfl.ch/<your-project>/<your-image>
 # (!MASKED) CI_REGISTRY_PASSWORD: the token for the service account
 # (!MASKED) CI_REGISTRY_USER: remote-pusher (or any other service account you have in Openshift to push images)
-# and use the following commented job:
+# You can read about how to create a new service account and how to retrieve token of service account in https://bbpteam.epfl.ch/project/spaces/pages/viewpage.action?pageId=25860590#SelfServiceContainers(OpenShift)-PushingimagestotheOpenShiftregistryfromexternalentities
+
+# In order to build and push an image use the following commented job:
 
 # build-push-image-job-example:
 #  stage: deploy
