@@ -169,6 +169,3 @@ def push_model(
             vector_dimension=vector_dimension
         )
     return model_resource
-
-
-

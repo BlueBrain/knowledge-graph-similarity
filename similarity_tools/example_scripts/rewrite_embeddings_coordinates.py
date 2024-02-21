@@ -64,4 +64,3 @@ deployment = Deployment.PRODUCTION
 
 # OUTPUT Aggregated Similarity view id
 # 'https://bbp.epfl.ch/views/bbp/atlas/d6b2a610-0790-4792-9b39-06052531bc5f'
-

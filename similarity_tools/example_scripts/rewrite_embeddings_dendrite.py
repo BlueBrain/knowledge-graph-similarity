@@ -60,4 +60,3 @@ from similarity_tools.registration.step import Step
 
 # OUTPUT Aggregated Similarity view id
 # 'https://bbp.epfl.ch/views/bbp/atlas/c94ab369-a488-48e3-9e00-585b354cdb32'
-

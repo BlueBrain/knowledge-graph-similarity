@@ -56,23 +56,23 @@ class Vectorisation:
     @staticmethod
     def build_vectors_from_tmd_implementations(ph1):
 
-            xlim = None
-            ylim = None
-            bw_method = None
-            weights = None
-            resolution = 100
-            bins = None
-            num_bins = 1000
+        xlim = None
+        ylim = None
+        bw_method = None
+        weights = None
+        resolution = 100
+        bins = None
+        num_bins = 1000
 
-            a = vectorizations.persistence_image_data(
-                ph1, xlim=xlim, ylim=ylim, bw_method=bw_method, weights=weights,
-                resolution=resolution
-            )
-            b = vectorizations.betti_curve(
-                ph1, bins=bins, num_bins=num_bins
-            )[0]
-            c = vectorizations.life_entropy_curve(
-                ph1, bins=bins, num_bins=num_bins
-            )[0]
+        a = vectorizations.persistence_image_data(
+            ph1, xlim=xlim, ylim=ylim, bw_method=bw_method, weights=weights,
+            resolution=resolution
+        )
+        b = vectorizations.betti_curve(
+            ph1, bins=bins, num_bins=num_bins
+        )[0]
+        c = vectorizations.life_entropy_curve(
+            ph1, bins=bins, num_bins=num_bins
+        )[0]
 
-            return a, b, c
+        return a, b, c

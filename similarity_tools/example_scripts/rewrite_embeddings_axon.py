@@ -65,4 +65,3 @@ for org, project in [
 
 # OUTPUT Aggregated Similarity view id
 # 'https://bbp.epfl.ch/views/bbp/atlas/90b2bae0-584e-4f7c-abaa-d1af5ad393e3'
-

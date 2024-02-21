@@ -67,7 +67,7 @@ def register_boosting_data(
 
     forge_bucket = bucket_bc.allocate_forge_session()
 
-    factors = register_boosting_factors(
+    register_boosting_factors(
         forge=forge_bucket,
         view_id=aggregated_similarity_view_id,
         boosting_factors=boosting,

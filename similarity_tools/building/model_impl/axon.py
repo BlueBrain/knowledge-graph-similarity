@@ -21,8 +21,7 @@ class AxonModel(Model):
 
         axon_frame = PandasPGFrame.from_frames(nodes=self.location_features, edges=pd.DataFrame())
 
-        compartments = set(model_data.compartments_with_location_features) - \
-                       set(model_data.compartments_to_exclude)
+        compartments = set(model_data.compartments_with_location_features) - set(model_data.compartments_to_exclude)
 
         properties_props = set(
             model_data.compartment_feature_name_to_str(c, f)

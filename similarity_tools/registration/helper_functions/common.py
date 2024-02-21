@@ -101,4 +101,3 @@ def _persist(
 
     else:
         logger.info(f"> No {obj_str} to {verb_c}")
-

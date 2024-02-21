@@ -4,9 +4,8 @@ from setuptools import setup, find_packages
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 
-GITLAB_USERNAME = os.environ.get("GITLAB_USERNAME")
-GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN")
-
+GITLAB_USERNAME = "mouffok"
+GITLAB_TOKEN = "6Nset22xNB-qiLfsTvtu"
 
 # Get the long description from the README file.
 with open(os.path.join(HERE, "README.md"), encoding="utf-8") as f:
@@ -25,7 +24,7 @@ setup(
     long_description_content_type="text/markdown",
     keywords="ontology knowledge graph data science",
     packages=find_packages(),
-    python_requires=">=3.7,<3.10",
+    python_requires=">=3.7",
     include_package_data=True,
     setup_requires=[
         "setuptools_scm",

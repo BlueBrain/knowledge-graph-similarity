@@ -8,4 +8,3 @@ TSNE_SUBDIRECTORY = "tsne/"
 EMBEDDING_MAPPING_PATH = get_path("./registration/mappings/embedding.hjson")
 BOOSTING_FACTOR_MAPPING_PATH = get_path("./registration/mappings/boosting_factor.hjson")
 STATISTIC_MAPPING_PATH = get_path("./registration/mappings/statistic.hjson")
-

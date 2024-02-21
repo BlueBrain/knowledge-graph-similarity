@@ -21,4 +21,3 @@ class ModelDataMorphologyModels(ModelData):
         self.forge = bucket_configuration.allocate_forge_session()
 
         self.data = self.forge.search({"type": "CanonicalMorphologyModel"}, limit=1500)
-

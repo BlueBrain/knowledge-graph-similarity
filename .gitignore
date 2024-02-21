@@ -1,2 +1,6 @@
 similarity_tools/building/model_data_impl/test/
 .idea/
+.eggs/
+build/
+similarity_tools.egg-info/
+venv/

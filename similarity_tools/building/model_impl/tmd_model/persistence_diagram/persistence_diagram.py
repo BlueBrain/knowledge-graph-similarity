@@ -140,4 +140,3 @@ class PersistenceDiagram(ABC):
                 diagrams = json.load(f)
 
         return diagrams
-

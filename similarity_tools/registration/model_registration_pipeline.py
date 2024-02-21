@@ -31,7 +31,6 @@ class ModelRegistrationPipeline:
     def get_step(step: Step) -> ModelRegistrationStep:
         return ModelRegistrationPipeline.steps[step.value - 1]
 
-
     # @staticmethod
     # def run(
     #     model_description: ModelDescription,

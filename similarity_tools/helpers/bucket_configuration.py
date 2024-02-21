@@ -22,8 +22,7 @@ class NexusBucketConfiguration:
         Deployment.PRODUCTION: get_path("../token/token_prod.txt"),
         Deployment.AWS: get_path("../token/token_aws.txt")
     }
-    config_prod_path = \
-       "https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml"
+    config_prod_path = "https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml"
 
     def __init__(self, organisation: str, project: str, deployment: Deployment,
                  elastic_search_view: str = None, sparql_view: str = None,

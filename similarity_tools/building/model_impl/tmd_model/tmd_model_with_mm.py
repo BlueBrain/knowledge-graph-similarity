@@ -65,7 +65,7 @@ class TMDModelWithMM(Model):
             for morphology_id, diagram in nm_persistence_diagrams.items()
         )
 
-        keys = list(vectors.keys())
+        # keys = list(vectors.keys())
         x = np.float32(np.stack(list(vectors.values())))  # TODO check
         x = (x / x.max()).tolist()
 

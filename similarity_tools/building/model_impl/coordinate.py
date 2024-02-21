@@ -37,7 +37,7 @@ class CoordinateModel(Model):
 
         coordinate_df = coordinate_df.set_index("@id")
 
-        coordinates_frame = PandasPGFrame.from_frames(nodes=coordinate_df, edges=pd.DataFrame())
+        # coordinates_frame = PandasPGFrame.from_frames(nodes=coordinate_df, edges=pd.DataFrame())
 
         similarity_index = FaissSimilarityIndex(
             dimension=self.dimension, similarity=self.similarity, n_segments=3

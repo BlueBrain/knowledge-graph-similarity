@@ -43,4 +43,3 @@ step_2 = ModelRegistrationStep(
     step=Step.REGISTER_MODEL,
     log_message="Pushing to Nexus"
 )
-

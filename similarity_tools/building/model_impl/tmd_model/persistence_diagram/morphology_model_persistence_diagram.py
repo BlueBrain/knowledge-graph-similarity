@@ -36,4 +36,3 @@ class MorphologyModelPersistenceDiagram(PersistenceDiagram):
             return [arr_i[:2] for arr_i in tree]
 
         return list(map(get_filtration_value_only, compartment["persistence_diagram"]))
-

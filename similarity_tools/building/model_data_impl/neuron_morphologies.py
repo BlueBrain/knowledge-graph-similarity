@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List, Any, Set
+from typing import Dict, Tuple, List, Set
 import pandas as pd
 
 from kgforge.core import Resource
@@ -88,8 +88,7 @@ class NeuronMorphologies(ModelData):
         def get_br_in_annotation(annotation):
             location_features = [
                 feature_ann for feature_ann in annotation.hasBody
-                if feature_ann.isMeasurementOf.label in
-                   NeuronMorphologies.location_feature_names
+                if feature_ann.isMeasurementOf.label in NeuronMorphologies.location_feature_names
             ]
 
             def br_id(series_element):

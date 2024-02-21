@@ -65,4 +65,3 @@ ag_view_id = ModelRegistrationPipeline.get_step(Step.REGISTER_AGGREGATED_SIMILAR
 
 # OUTPUT Aggregated Similarity view id
 # 'https://bbp.epfl.ch/views/bbp/atlas/df5cff33-79f9-49be-9f87-b2171e361a13'
-

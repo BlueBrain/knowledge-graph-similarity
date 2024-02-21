@@ -2,6 +2,7 @@ from bluegraph import version as bg_version
 import sys
 import subprocess
 
+
 def get_git_revision_hash(short=True) -> str:
     arr = ['git', 'rev-parse', '--short', 'HEAD'] if short else ['git', 'rev-parse', 'HEAD']
     return subprocess.check_output(arr).decode('ascii').strip()
@@ -50,4 +51,3 @@ def get_bluegraph_version():
 
 def get_python_version():
     return f"{sys.version_info.major}.{sys.version_info.minor}"
-

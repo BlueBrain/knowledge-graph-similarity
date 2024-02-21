@@ -20,5 +20,3 @@ class ModelData(ABC):
         self.deployment = deployment
         self.org = org
         self.project = project
-
-

@@ -121,5 +121,3 @@ def _search_stats(
                        "the first one")
 
     return Statistic.from_json(forge.as_json(res[0])) if not as_resource else res[0]
-
-
