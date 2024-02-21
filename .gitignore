@@ -4,3 +4,6 @@ similarity_tools/building/model_data_impl/test/
 build/
 similarity_tools.egg-info/
 venv/
+token/
+data/
+**/__pycache__/

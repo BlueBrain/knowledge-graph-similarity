@@ -56,69 +56,27 @@ class TMDModel(Model):
         )
 
     def run(self) -> EmbeddingPipeline:
+        vectors = dict(
+            (
+                morphology_id,
+                Vectorisation.build_vectors_from_tmd_implementations(diagram)
+            )
+            for morphology_id, diagram in self.nm_persistence_diagrams.items()
+        )
+        return vectors
 
-        return TMDModel.rest(
+
+class UnscaledTMDModel(TMDModel):
+
+    def run(self) -> EmbeddingPipeline:
+
+        return old_vectorisation_run(
             self.nm_persistence_diagrams,
             dim=self.dim,
             max_time=self.max_time,
             kernel_width=self.kernel_width,
             max_height=self.max_height
         )
-
-    @staticmethod
-    def rest(nm_persistence_diagrams, dim, max_time, kernel_width, max_height) -> EmbeddingPipeline:
-
-        vectors = dict(
-            (
-                morphology_id,
-                Vectorisation.build_vectors_from_tmd_implementations(diagram)
-                # Vectorisation.compute_persistence_vector(
-                #     diagram=diagram,
-                #     dim=dim,
-                #     max_time=max_time,
-                #     kernel_width=kernel_width,
-                #     max_height=max_height
-                # )
-            )
-            for morphology_id, diagram in nm_persistence_diagrams.items()
-        )
-
-        return vectors
-        # keys = list(vectors.keys())
-        # x = np.float32(np.stack(list(vectors.values())))  # TODO check
-        # x = (x / x.max()).tolist()
-        #
-        # similarity_index = ScikitLearnSimilarityIndex(
-        #     dimension=dim, similarity="euclidean",
-        #     initial_vectors=x
-        # )
-        #
-        # pipeline = EmbeddingPipeline(
-        #     preprocessor=None,
-        #     embedder=None,
-        #     similarity_processor=SimilarityProcessor(similarity_index, point_ids=keys)
-        # )
-        #
-        # return pipeline
-
-        # TODO uncomment
-
-        # Actually, for this kind of embeddings, it makes more sense to use
-        # [Wasserstein metric](https://en.wikipedia.org/wiki/Wasserstein_metric).
-        # See BlueGraph implementation:
-
-        # similarity_index = ScikitLearnSimilarityIndex(
-        #     dimension=dim, similarity="wasserstein",
-        #     initial_vectors=scaled_x)
-        # sim_processor = SimilarityProcessor(
-        #     similarity_index, keys)
-        # pipeline = EmbeddingPipeline(
-        #     preprocessor=None,
-        #     embedder=None,
-        #     similarity_processor=sim_processor)
-
-
-class UnscaledTMDModel(TMDModel):
 
     def __init__(self, model_data: NeuronMorphologiesQuery, re_compute=True, re_download=True):
         super().__init__(model_data=model_data, re_compute=re_compute, re_download=re_download)
@@ -148,6 +106,16 @@ class UnscaledTMDModel(TMDModel):
 
 class ScaledTMDModel(TMDModel):
 
+    def run(self) -> EmbeddingPipeline:
+
+        return old_vectorisation_run(
+            self.nm_persistence_diagrams,
+            dim=self.dim,
+            max_time=self.max_time,
+            kernel_width=self.kernel_width,
+            max_height=self.max_height
+        )
+
     def __init__(self, model_data: NeuronMorphologiesQuery, re_compute=True, re_download=True):
         super().__init__(model_data=model_data, re_compute=re_compute, re_download=re_download)
 
@@ -169,3 +137,52 @@ class ScaledTMDModel(TMDModel):
             (name, scale(diagram))
             for name, diagram in self.nm_persistence_diagrams.items()
         )
+
+
+def old_vectorisation_run(nm_persistence_diagrams, dim, max_time, kernel_width, max_height) -> EmbeddingPipeline:
+    vectors = dict(
+        (
+            morphology_id,
+            Vectorisation.compute_persistence_vector(
+                diagram=diagram,
+                dim=dim,
+                max_time=max_time,
+                kernel_width=kernel_width,
+                max_height=max_height
+            )
+        )
+        for morphology_id, diagram in nm_persistence_diagrams.items()
+    )
+
+    keys = list(vectors.keys())
+    x = np.float32(np.stack(list(vectors.values())))  # TODO check
+    x = (x / x.max()).tolist()
+
+    similarity_index = ScikitLearnSimilarityIndex(
+        dimension=dim, similarity="euclidean",
+        initial_vectors=x
+    )
+
+    pipeline = EmbeddingPipeline(
+        preprocessor=None,
+        embedder=None,
+        similarity_processor=SimilarityProcessor(similarity_index, point_ids=keys)
+    )
+
+    return pipeline
+
+    # TODO uncomment
+
+    # Actually, for this kind of embeddings, it makes more sense to use
+    # [Wasserstein metric](https://en.wikipedia.org/wiki/Wasserstein_metric).
+    # See BlueGraph implementation:
+
+    # similarity_index = ScikitLearnSimilarityIndex(
+    #     dimension=dim, similarity="wasserstein",
+    #     initial_vectors=scaled_x)
+    # sim_processor = SimilarityProcessor(
+    #     similarity_index, keys)
+    # pipeline = EmbeddingPipeline(
+    #     preprocessor=None,
+    #     embedder=None,
+    #     similarity_processor=sim_processor)
