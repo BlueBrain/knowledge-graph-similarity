@@ -1,0 +1,18 @@
+{
+    "id": x.stat_id
+    "type": "ElasticSearchViewStatistics"
+    "boosted": x.boosted
+    "scriptScore": x.formula_value
+    "series": x.series
+    "derivation": {
+        "type": "Derivation"
+        "entity": {
+            "id": x.view_id
+        }
+    }
+    "generation": {
+        "activity": {
+            "wasAssociatedWith": None
+        }
+    }
+}

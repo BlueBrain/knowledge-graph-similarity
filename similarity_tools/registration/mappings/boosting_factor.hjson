@@ -1,0 +1,26 @@
+{
+    "id": x.boosting_factor_id
+    "type": "SimilarityBoostingFactor"
+    "value": x.boosting_value
+    "unitCode": "dimensionless"
+    "scriptScore": x.formula_str
+    "vectorParameter": "query_vector"
+    "derivation": {
+        "type": "Derivation"
+        "entity": {
+            "id": x.entity_id
+            "_rev": x.entity_rev
+            "type": "Embedding"
+        }
+    }
+    "generation": {
+        "type": "Generation"
+        "activity": {
+            "type": "Activity"
+            "used": {
+                "id": x.view_id
+                "type": "ElasticSearchView"
+            }
+        }
+    }
+}

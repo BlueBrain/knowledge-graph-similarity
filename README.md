@@ -1,3 +1,3 @@
-# Generic DKE template
+# KG Inference Similarity
 
-This is a generic template for any DKE app
+Set of tools in order to create the data necessary for similarity-based inference rules

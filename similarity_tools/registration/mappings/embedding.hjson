@@ -1,0 +1,48 @@
+{
+    type: [
+        Entity
+        Embedding
+    ]
+    id: x.embedding_id
+    name: x.embedding_name,
+    generation: {
+        type: Generation
+        activity: {
+            type: [
+                Activity
+                EmbeddingActivity
+            ]
+            used: [
+                {
+                    id: x.model_id
+                    type: EmbeddingModel
+                    _rev: x.model_rev
+                },
+                {
+                    id: x.entity_id
+                    type: x.entity_type
+                    _rev: x.entity_rev
+                }
+            ]
+        }
+    }
+    derivation: [
+        {
+            type: Derivation
+            entity: {
+                id: x.entity_id
+                type: x.entity_type
+                _rev: x.entity_rev
+            }
+        },
+        {
+            type: Derivation
+            entity: {
+                id: x.model_id
+                type: EmbeddingModel
+                _rev: x.model_rev
+            }
+        }
+    ]
+    embedding: x.embedding_vector
+}
