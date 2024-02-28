@@ -23,7 +23,7 @@ class NeuronMorphologies(ModelData):
     def __init__(
             self, org, project, src_data_dir=None, dst_data_dir=None,
             get_annotations=True,
-            deployment=Deployment.PRODUCTION, token_file_path=None, config_file_path=None
+            deployment=Deployment.PRODUCTION, config_file_path=None
     ):
 
         super().__init__(
@@ -33,7 +33,7 @@ class NeuronMorphologies(ModelData):
 
         bucket_configuration = NexusBucketConfiguration(
             self.org, self.project, deployment=deployment,
-            token_file_path=token_file_path, config_file_path=config_file_path,
+            config_file_path=config_file_path,
             sparql_view="https://bluebrain.github.io/nexus/vocabulary/defaultSparqlIndex"
         )
 

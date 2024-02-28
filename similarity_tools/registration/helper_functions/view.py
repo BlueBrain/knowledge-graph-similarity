@@ -140,7 +140,7 @@ def view_create(
         bucket_configuration: NexusBucketConfiguration,
 ) -> Dict:
 
-    token = bucket_configuration.load_token(bucket_configuration.get_token_path())
+    token = bucket_configuration.get_token()
 
     return create_es_view_legacy_params(
         bucket_configuration=bucket_configuration,
@@ -167,7 +167,7 @@ def view_create(
 #
 #     resource_tag = get_model_tag(model_id, model_revision)
 #
-#     token = bucket_configuration.load_token(bucket_configuration.get_token_path())
+#     token = bucket_configuration.get_token()
 #
 #     try:
 #         existing_view = get_es_view(
@@ -228,7 +228,7 @@ def create_aggregated_view(
     #
     # sub_view_id = sub_view_template.replace("$MODEL", model_str).replace("$VIEWTYPE", view_type)
 
-    token = bucket_configuration.load_token(bucket_configuration.get_token_path())
+    token = bucket_configuration.get_token()
 
     url = f"{bucket_configuration.endpoint}/views/{url_encode(bucket_configuration.organisation)}" \
           f"/{url_encode(bucket_configuration.project)}"

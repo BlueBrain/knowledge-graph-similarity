@@ -1,12 +1,9 @@
 from enum import Enum
+from typing import Callable
 
 from kgforge.core import KnowledgeGraphForge
 
-import os
-
-
-def get_path(path):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", path)
+from similarity_tools.helpers.get_token import get_token_from_file
 
 
 class Deployment(Enum):
@@ -17,16 +14,14 @@ class Deployment(Enum):
 
 class NexusBucketConfiguration:
 
-    token_map = {
-        Deployment.STAGING:  get_path("../token/token_staging.txt"),
-        Deployment.PRODUCTION: get_path("../token/token_prod.txt"),
-        Deployment.AWS: get_path("../token/token_aws.txt")
-    }
     config_prod_path = "https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml"
 
-    def __init__(self, organisation: str, project: str, deployment: Deployment,
-                 elastic_search_view: str = None, sparql_view: str = None,
-                 config_file_path: str = None, token_file_path: str = None):
+    def __init__(
+            self, organisation: str, project: str, deployment: Deployment,
+            elastic_search_view: str = None, sparql_view: str = None,
+            config_file_path: str = None,
+            token_getter: Callable[[Deployment], str] = get_token_from_file
+    ):
 
         self.deployment = deployment
         self.endpoint = deployment.value
@@ -34,34 +29,22 @@ class NexusBucketConfiguration:
         self.project = project
 
         self.config_file_path = config_file_path
-        self.token_file_path = token_file_path
-
-        self.token = None
+        self.token_getter = token_getter
 
         self.elastic_search_view = elastic_search_view
         self.sparql_view = sparql_view
 
-    def set_token(self, token):
-        self.token = token
-
-    def get_token_path(self) -> str:
-        return self.token_file_path or NexusBucketConfiguration.token_map[self.deployment]
-
-    @staticmethod
-    def load_token(token_file_path: str):
-        with open(token_file_path, encoding="utf-8") as f:
-            return f.read()
+    def get_token(self):
+        return self.token_getter(self.deployment)
 
     def allocate_forge_session(self):
 
         bucket = f"{self.organisation}/{self.project}"
 
-        token = self.token or NexusBucketConfiguration.load_token(self.get_token_path())
-
         args = dict(
             configuration=self.config_prod_path,
             endpoint=self.endpoint,
-            token=token,
+            token=self.get_token(),
             bucket=bucket,
             debug=False
         )
@@ -80,10 +63,19 @@ class NexusBucketConfiguration:
         return KnowledgeGraphForge(**args)
 
     def copy_with_views(self, elastic_search_view: str = None, sparql_view: str = None):
-
+        """
+        Return a new instance of this class with the same attributes values as the self,
+        except for the views, that will take the values provided as parameters
+        :param elastic_search_view: the elastic search view new value
+        :type elastic_search_view: str
+        :param sparql_view: the sparql view new value
+        :type sparql_view: str
+        :return: the copied instance with the modified views
+        :rtype: NexusBucketConfiguration
+        """
         return NexusBucketConfiguration(
             organisation=self.organisation, project=self.project, deployment=self.deployment,
-            config_file_path=self.config_file_path, token_file_path=self.token_file_path,
+            config_file_path=self.config_file_path, token_getter=self.token_getter,
             sparql_view=sparql_view, elastic_search_view=elastic_search_view
         )
 

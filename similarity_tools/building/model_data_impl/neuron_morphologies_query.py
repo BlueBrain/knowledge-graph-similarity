@@ -23,12 +23,12 @@ class NeuronMorphologiesQuery(NeuronMorphologies):
             save_dir=None,
             src_data_dir=None, dst_data_dir=None,
             get_annotations=True, deployment=Deployment.PRODUCTION,
-            token_file_path=None, config_file_path=None
+            config_file_path=None
     ):
 
         super().__init__(
             src_data_dir=src_data_dir, dst_data_dir=dst_data_dir, org=org, project=project,
-            deployment=deployment, get_annotations=get_annotations, token_file_path=token_file_path,
+            deployment=deployment, get_annotations=get_annotations,
             config_file_path=config_file_path
         )
 
