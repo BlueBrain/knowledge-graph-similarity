@@ -61,7 +61,22 @@ def register_stats(
 ) -> str:
     """Create ES view statistic resources."""
 
-    series = stats.to_series()
+    def to_series(statistic_instance: Statistic) -> List[Dict]:
+        stats_dict = {
+            "min": statistic_instance.min,
+            "max": statistic_instance.max,
+            "mean": statistic_instance.mean,
+            "standard deviation": statistic_instance.std,
+            "N": statistic_instance.count
+        }
+
+        return [{
+            "statistic": key,
+            "unitCode": "dimensionless",
+            "value": val
+        } for key, val in stats_dict.items()]
+
+    series = to_series(stats)
 
     # Check if a statistics view for this entity id already exists
     stats_resource: Optional[Resource] = _search_stats(
