@@ -4,7 +4,7 @@ from typing import Optional, List
 from similarity_tools.registration.registration_exception import SimilarityToolsException
 
 from similarity_tools.building.model_impl.tmd_model.persistence_diagram.persistence_diagram import \
-    PersistenceDiagram
+    PersistenceDiagram, NeuriteType
 
 import json
 
@@ -16,11 +16,11 @@ class MorphologyModelPersistenceDiagram(PersistenceDiagram):
         return forge.retrieve(m.morphologyModelDistribution.id).distribution
 
     @classmethod
-    def get_persistence_data(cls, filename) -> Optional[List]:
+    def get_persistence_data(cls, filename, neurite_type: NeuriteType) -> Optional[List]:
         with open(filename) as f:
             t = json.load(f)
 
-        compartment = t[PersistenceDiagram.NEURITE_TYPE]
+        compartment = t[neurite_type]
 
         if compartment["filtration_metric"] != PersistenceDiagram.FILTRATION_METRIC:
 

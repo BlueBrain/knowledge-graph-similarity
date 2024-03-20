@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 from similarity_tools.building.model_data_impl.neuron_morphologies import NeuronMorphologies
-from similarity_tools.helpers.bucket_configuration import Deployment
+from similarity_tools.helpers.bucket_configuration import Deployment, NexusBucketConfiguration
 
 from similarity_tools.helpers.utils import encode_id_rev
 
@@ -10,15 +10,19 @@ from similarity_tools.helpers.utils import encode_id_rev
 class NeuronMorphologiesLoad(NeuronMorphologies):
 
     def __init__(
-            self, org, project, save_dir, src_data_dir=None, dst_data_dir=None,
-            get_annotations=True, deployment=Deployment.PRODUCTION,
-            config_file_path=None
+            self,
+            bucket_configuration: NexusBucketConfiguration,
+            save_dir,
+            src_data_dir=None,
+            dst_data_dir=None,
+            get_annotations=True
     ):
         super().__init__(
-            src_data_dir=src_data_dir, dst_data_dir=dst_data_dir, org=org, project=project,
-            deployment=deployment, get_annotations=get_annotations,
-            config_file_path=config_file_path
+            bucket_configuration=bucket_configuration,
+            src_data_dir=src_data_dir, dst_data_dir=dst_data_dir,
         )
+
+        self.forge = bucket_configuration.allocate_forge_session()
 
         full_df = pd.read_pickle(os.path.join(save_dir, "morphologies.pkl"))
         morphologies = self.forge.from_dataframe(full_df)
@@ -55,4 +59,7 @@ class NeuronMorphologiesLoad(NeuronMorphologies):
 
 
 if __name__ == "__main__":
-    b = NeuronMorphologiesLoad(org="bbp-external", project="seu", save_dir="./test")
+    test = NexusBucketConfiguration(
+        organisation="bbp-external", project="seu", deployment=Deployment.PRODUCTION
+    )
+    b = NeuronMorphologiesLoad(bucket_configuration=test, save_dir="./test")

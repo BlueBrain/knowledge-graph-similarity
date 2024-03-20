@@ -13,12 +13,11 @@ from similarity_tools.helpers.elastic import ElasticSearch
 from kgforge.core import Resource, KnowledgeGraphForge
 
 from similarity_tools.registration.helper_functions.common import _persist
-from similarity_tools.registration.helper_functions.software_agents import \
-    _software_agent_bluegraph, _software_agent_similarity_tools
 from similarity_tools.helpers.logger import logger
 from similarity_tools.registration.registration_exception import SimilarityToolsException
 from similarity_tools.registration.types import Types
 from similarity_tools.helpers.utils import create_id, create_id_with_forge
+from similarity_tools.registration.helper_functions.software_agents import get_wasAssociatedWith
 
 
 def _compute_score_deviation(forge, point_id, vector, score_min, score_max, k, formula: Formula):
@@ -194,10 +193,7 @@ def _update(
                 "id": view_id,
                 "type": "ElasticSearchView"
             },
-            "wasAssociatedWith": [
-                _software_agent_bluegraph(),
-                _software_agent_similarity_tools()
-            ]
+            "wasAssociatedWith": get_wasAssociatedWith(bluegraph=False)
         }
     }
 
@@ -223,7 +219,7 @@ def _create(
 
     boosting_resource = forge.map(boosting_dict, mapping)
 
-    boosting_resource.generation.activity.wasAssociatedWith = _software_agent_similarity_tools()
+    boosting_resource.generation.activity.wasAssociatedWith = get_wasAssociatedWith(bluegraph=False)
 
     return boosting_resource
 

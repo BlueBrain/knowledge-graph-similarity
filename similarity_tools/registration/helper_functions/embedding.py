@@ -1,5 +1,6 @@
 import os
-from typing import List, Dict, Optional, Tuple, Callable
+import json
+from typing import List, Dict, Optional, Tuple, Callable, Union
 
 from bluegraph.core import GraphElementEmbedder
 from bluegraph.downstream import EmbeddingPipeline
@@ -7,9 +8,7 @@ from kgforge.core import KnowledgeGraphForge, Resource
 from kgforge.specializations.mappings import DictionaryMapping
 
 from similarity_tools.registration.helper_functions.common import _persist
-from similarity_tools.registration.helper_functions.model import _software_agent_bluegraph
-from similarity_tools.registration.helper_functions.software_agents import \
-    _software_agent_similarity_tools
+from similarity_tools.registration.helper_functions.software_agents import get_wasAssociatedWith
 from similarity_tools.helpers.logger import logger
 from similarity_tools.registration.types import Types
 from similarity_tools.helpers.utils import encode_id_rev, get_model_tag, parse_id_rev, create_id, \
@@ -48,19 +47,23 @@ def load_embedding_model(
     model_tag = get_model_tag(model_id, model_revision)
 
     forge.download(
-        model, "distribution.contentUrl", download_dir, overwrite=True)
+        model, "distribution.contentUrl", download_dir, overwrite=True
+    )
 
     path = os.path.join(download_dir, model.distribution.name)
-
-    pipeline = EmbeddingPipeline.load(
-        path=path, embedder_interface=GraphElementEmbedder, embedder_ext="zip"
-    )
+    if "json" in path:
+        with open(path, "r") as f:
+            pipeline = json.load(f)
+    else:
+        pipeline = EmbeddingPipeline.load(
+            path=path, embedder_interface=GraphElementEmbedder, embedder_ext="zip"
+        )
 
     return model_revision, model_tag, pipeline
 
 
 def get_embedding_vectors_from_pipeline(
-        pipeline: EmbeddingPipeline,
+        pipeline: Union[EmbeddingPipeline, Dict[str, List]],
         resource_id_rev_list: Optional[List[Tuple[str, int]]] = None
 ) -> Tuple[
     List[Tuple[str, int]],  # missing embeddings
@@ -83,12 +86,17 @@ def get_embedding_vectors_from_pipeline(
         ]
     """
 
-    embedding_table = pipeline.generate_embedding_table()
+    if isinstance(pipeline, EmbeddingPipeline):
+        embedding_table = pipeline.generate_embedding_table()
 
-    embedding_table: Dict[Tuple, List] = dict(
-        (parse_id_rev(key), value.tolist())
-        for key, value in embedding_table.loc[:, "embedding"].to_dict().items()
-    )
+        embedding_table: Dict[Tuple, List] = dict(
+            (parse_id_rev(key), value.tolist())
+            for key, value in embedding_table.loc[:, "embedding"].to_dict().items()
+        )
+    else:
+        embedding_table = dict(
+            (parse_id_rev(key), value) for key, value in pipeline.items()
+        )
 
     if resource_id_rev_list is None:
         return [], embedding_table
@@ -120,9 +128,13 @@ def get_embedding_vectors_from_pipeline(
 
 
 def register_embeddings(
-        forge: KnowledgeGraphForge, vectors: Dict[Tuple[str, int], List[float]],
-        model_id: str, model_revision: int, embedding_tag: str,
+        forge: KnowledgeGraphForge,
+        vectors: Dict[Tuple[str, int], List[float]],
+        model_id: str,
+        model_revision: int,
+        embedding_tag: str,
         mapping_path: str,
+        bluegraph: bool
 ) -> Tuple[str, int]:
     """
     Register and updates embedding vectors
@@ -142,6 +154,8 @@ def register_embeddings(
     @type mapping_path: str
     # @param entity_type: the type of the entity that's been embedded
     # @type entity_type: str
+    @param bluegraph: whether bluegraph was used in the generation of this embedding
+    @type bluegraph: bool
     @return the tag applied to the embedding resources, and the vector dimension of the embeddings
     @rtype Tuple[str, int]
     """
@@ -165,21 +179,30 @@ def register_embeddings(
         if existing_vectors_i is not None and len(existing_vectors_i) > 0:
 
             updated = _update(
-                entity_id=entity_id_i, entity_rev=entity_rev_i,
-                entity_type="NeuronMorphology",
+                entity_id=entity_id_i,
+                entity_rev=entity_rev_i,
+                entity_type=resource.type,
                 embedding=embedding_vector_i,
-                model_id=model_id, model_revision=model_revision,
-                embedding_vector_resource=existing_vectors_i[0]
+                model_id=model_id,
+                model_revision=model_revision,
+                embedding_vector_resource=existing_vectors_i[0],
+                bluegraph=bluegraph
             )
             updated_embeddings.append(updated)
         # Embedding vector for this entity and this model does not exist, create it
         else:
 
             created = _create(
-                entity_id=entity_id_i, entity_rev=entity_rev_i, entity_type=resource.type,
-                embedding=embedding_vector_i, forge=forge,
-                model_id=model_id, model_revision=model_revision,
-                mapping=mapping
+                entity_id=entity_id_i,
+                entity_rev=entity_rev_i,
+                entity_type=resource.type,
+                embedding=embedding_vector_i,
+                forge=forge,
+                model_id=model_id,
+                model_revision=model_revision,
+                mapping=mapping,
+                bluegraph=bluegraph
+
             )
             new_embeddings.append(created)
 
@@ -192,9 +215,14 @@ def register_embeddings(
 
 
 def _update(
-        entity_id: str, entity_rev: int, entity_type: str, embedding: List[float],
-        model_id: str, model_revision: int,
-        embedding_vector_resource: Resource
+        entity_id: str,
+        entity_rev: int,
+        entity_type: str,
+        embedding: List[float],
+        model_id: str,
+        model_revision: int,
+        embedding_vector_resource: Resource,
+        bluegraph: bool
 ) -> Resource:
 
     embedding_vector_resource.name = f"Embedding of {entity_id.split('/')[-1]} at revision {entity_rev}"
@@ -245,10 +273,7 @@ def _update(
     ]
     embedding_vector_resource.generation.activity.used = [new_model_dict, new_entity_dict]
 
-    embedding_vector_resource.generation.activity.wasAssociatedWith = [
-        _software_agent_bluegraph(),
-        _software_agent_similarity_tools()
-    ]
+    embedding_vector_resource.generation.activity.wasAssociatedWith = get_wasAssociatedWith(bluegraph)
 
     return embedding_vector_resource
 
@@ -260,7 +285,8 @@ def _create(
         embedding: List[float],
         forge: KnowledgeGraphForge,
         model_id: str,
-        model_revision: int, mapping: Dict
+        model_revision: int, mapping: Dict,
+        bluegraph: bool
 ) -> Resource:
     entity_dict = {
         "entity_id": entity_id,
@@ -275,10 +301,7 @@ def _create(
 
     embedding: Resource = forge.map(entity_dict, mapping)
 
-    embedding.generation.activity.wasAssociatedWith = [
-        _software_agent_bluegraph(),
-        _software_agent_similarity_tools()
-    ]
+    embedding.generation.activity.wasAssociatedWith = get_wasAssociatedWith(bluegraph)
 
     return embedding
 

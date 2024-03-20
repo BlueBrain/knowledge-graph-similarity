@@ -1,4 +1,6 @@
-from typing import Any, Optional
+import json
+from shutil import ReadError
+from typing import Any, Optional, Dict
 
 from kgforge.core import KnowledgeGraphForge, Resource
 from kgforge.specializations.resources import Dataset
@@ -7,11 +9,10 @@ from bluegraph.core.embed.embedders import GraphElementEmbedder
 from bluegraph.downstream import EmbeddingPipeline
 
 from similarity_tools.registration.helper_functions.common import _fetch_one, add_contribution
-from similarity_tools.registration.helper_functions.software_agents import \
-    _software_agent_bluegraph, _software_agent_similarity_tools
+from similarity_tools.registration.helper_functions.software_agents import get_wasAssociatedWith
 from similarity_tools.helpers.logger import logger
 from similarity_tools.registration.types import Types
-from similarity_tools.helpers.utils import create_id, create_id_with_forge
+from similarity_tools.helpers.utils import create_id_with_forge
 
 
 def create_model(
@@ -20,7 +21,8 @@ def create_model(
         pref_label: str,
         pipeline_path: str,
         distance_metric: str,
-        vector_dimension: int
+        vector_dimension: int,
+        content_type: str
 ) -> Resource:
     """
     Create a new embedding model resource
@@ -38,6 +40,8 @@ def create_model(
     @type distance_metric:
     @param vector_dimension:
     @type vector_dimension:
+    @param content_type:
+    @type content_type:
     @return: the id of the new model
     @rtype: str
     """
@@ -49,18 +53,14 @@ def create_model(
     model_resource.vectorDimension = vector_dimension
 
     if pipeline_path is not None:
-        model_resource.add_distribution(pipeline_path, content_type="application/octet-stream")
+        model_resource.add_distribution(pipeline_path, content_type=content_type)
 
-    generation = forge.from_json(
-        {
-            "activity": {
-                "wasAssociatedWith": [
-                    _software_agent_bluegraph(), _software_agent_similarity_tools()
-                ]
-            }
+    e = forge.from_json({
+        "activity": {
+            "wasAssociatedWith": get_wasAssociatedWith(bluegraph=content_type == "application/octet-stream")
         }
-    )
-    model_resource.add_generation(generation)
+    })
+    model_resource.add_generation(e)
 
     model_resource = add_contribution(forge=forge, resource=model_resource)
 
@@ -69,27 +69,25 @@ def create_model(
 
 
 def update_model(
-        forge: KnowledgeGraphForge, model_resource: Resource,
-        new_pipeline_path: str, vector_dimension: int
+        forge: KnowledgeGraphForge,
+        model_resource: Resource,
+        new_pipeline_path: str,
+        vector_dimension: int,
+        content_type: str
 ) -> Resource:
 
     # TODO should only update the distribution or also more?
     model_resource.vectorDimension = vector_dimension
 
-    model_resource.distribution = forge.attach(
-        new_pipeline_path, content_type="application/octet-stream"
-    )
+    model_resource.distribution = forge.attach(new_pipeline_path, content_type=content_type)
 
-    generation = forge.from_json(
-        {
-            "activity": {
-                "wasAssociatedWith": [
-                    _software_agent_bluegraph(), _software_agent_similarity_tools()
-                ]
-            }
+    model_resource.generation = forge.from_json({
+        "activity": {
+            "wasAssociatedWith": get_wasAssociatedWith(
+                bluegraph=content_type == "application/octet-stream"
+            )
         }
-    )
-    model_resource.generation = generation
+    })
 
     forge.update(model_resource)
     return model_resource
@@ -108,8 +106,9 @@ def fetch_embedding_model_data_catalog(
     )
 
 
-def fetch_model(forge: KnowledgeGraphForge, model_name: str, model_rev: Optional[int] = None) \
-        -> Optional[Resource]:
+def fetch_model(
+        forge: KnowledgeGraphForge, model_name: str, model_rev: Optional[int] = None
+) -> Optional[Resource]:
     return _fetch_one(
         entity_name=model_name,
         forge=forge,
@@ -120,8 +119,12 @@ def fetch_model(forge: KnowledgeGraphForge, model_name: str, model_rev: Optional
 
 
 def push_model(
-        forge: KnowledgeGraphForge, model_name: str,
-        description: str, label: str, pipeline_path: str, distance_metric: str
+        forge: KnowledgeGraphForge,
+        model_name: str,
+        description: str,
+        label: str,
+        pipeline_path: str,
+        distance_metric: str
 ) -> Resource:
     """
     Push (register or update) an embedding model
@@ -140,12 +143,23 @@ def push_model(
     @return: the updated/created model
     @rtype: Resource
     """
+    try:
+        path = f"{pipeline_path}.zip"
+        pipeline: EmbeddingPipeline = EmbeddingPipeline.load(
+            path=path, embedder_interface=GraphElementEmbedder, embedder_ext="zip"
+        )
+        vector_dimension = pipeline.generate_embedding_table().iloc[0]["embedding"].shape[0]
+        content_type = "application/octet-stream"
+        pipeline_path = path
 
-    pipeline = EmbeddingPipeline.load(
-        path=pipeline_path, embedder_interface=GraphElementEmbedder, embedder_ext="zip"
-    )
+    except ReadError:
+        path = f"{pipeline_path}.json"
+        with open(path, "r") as f:
+            pipeline: Dict = json.load(f)
 
-    vector_dimension = pipeline.generate_embedding_table().iloc[0]["embedding"].shape[0]
+        vector_dimension = len(list(pipeline.values())[0])
+        content_type = "application/json"
+        pipeline_path = path
 
     existing_model = fetch_model(forge, model_name=model_name)
 
@@ -155,7 +169,8 @@ def push_model(
             forge=forge,
             model_resource=existing_model,
             new_pipeline_path=pipeline_path,
-            vector_dimension=vector_dimension
+            vector_dimension=vector_dimension,
+            content_type=content_type
         )
     else:
         logger.info(">  Embedding Model does not exist, creating it")
@@ -166,6 +181,7 @@ def push_model(
             pref_label=label,
             pipeline_path=pipeline_path,
             distance_metric=distance_metric,
-            vector_dimension=vector_dimension
+            vector_dimension=vector_dimension,
+            content_type=content_type
         )
     return model_resource

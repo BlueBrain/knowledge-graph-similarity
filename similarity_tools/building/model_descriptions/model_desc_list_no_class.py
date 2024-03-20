@@ -106,3 +106,13 @@ neurite_model_description = ModelDescription({
     "model": None,
     "rev": None
 })
+
+new_tmd_model_description = ModelDescription({
+    "name": "NeuronMorphology TMD-based Embedding of basal dendrite tree",
+    "description": "Vectorization of persistence diagrams of neuron morphologies' basal dendrite",
+    "filename": "morph_TMD_image_data",
+    "label": "TMD",
+    "distance": "custom_tmd",
+    "model": None,
+    "rev": None
+})

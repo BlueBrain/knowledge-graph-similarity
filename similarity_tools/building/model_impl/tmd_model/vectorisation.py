@@ -4,6 +4,9 @@ from tmd.Topology import vectorizations
 
 class Vectorisation:
 
+    PERSISTENCE_IMAGE_RESOLUTION = 100
+    FLATTEN_NORMALIZE = True
+
     @staticmethod
     def diagram_to_persistence_points(diagram):
         lower_points = np.array([
@@ -54,25 +57,44 @@ class Vectorisation:
         return np.concatenate([lower_vector, upper_vector])
 
     @staticmethod
-    def build_vectors_from_tmd_implementations(ph1):
+    def persistence_image_data(**kwargs):
 
-        xlim = None
-        ylim = None
+        xlim = kwargs["xlim"]
+        ylim = kwargs["ylim"]
+
         bw_method = None
         weights = None
-        resolution = 100
+
+        def fc(ph):
+            temp = vectorizations.persistence_image_data(
+                ph, xlim=xlim, ylim=ylim, bw_method=bw_method, weights=weights,
+                resolution=Vectorisation.PERSISTENCE_IMAGE_RESOLUTION
+            )
+            if not Vectorisation.FLATTEN_NORMALIZE:
+                return temp.tolist()
+
+            normalized = temp/temp.max()  # should occur in image_diff_data
+            normalized_flattened = list(normalized.flatten())
+            return normalized_flattened
+
+        return fc
+
+    @staticmethod
+    def betti_curve(**kwargs):
+
         bins = None
-        num_bins = 1000
+        num_bins = 500
 
-        a = vectorizations.persistence_image_data(
-            ph1, xlim=xlim, ylim=ylim, bw_method=bw_method, weights=weights,
-            resolution=resolution
-        )
-        b = vectorizations.betti_curve(
-            ph1, bins=bins, num_bins=num_bins
-        )[0]
-        c = vectorizations.life_entropy_curve(
-            ph1, bins=bins, num_bins=num_bins
+        return lambda ph: vectorizations.betti_curve(
+            ph, bins=bins, num_bins=num_bins
         )[0]
 
-        return a, b, c
+    @staticmethod
+    def life_entropy_curve(**kwargs):
+        bins = None
+        num_bins = 500
+
+        return lambda ph: vectorizations.life_entropy_curve(
+            ph, bins=bins, num_bins=num_bins
+        )[0]
+

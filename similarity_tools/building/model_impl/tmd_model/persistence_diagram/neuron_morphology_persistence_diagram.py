@@ -7,7 +7,7 @@ from tmd.io.io import load_neuron_from_morphio
 from kgforge.core import Resource, KnowledgeGraphForge
 
 from similarity_tools.building.model_impl.tmd_model.persistence_diagram.persistence_diagram import \
-    PersistenceDiagram
+    PersistenceDiagram, NeuriteType
 
 
 class NeuronMorphologyPersistenceDiagram(PersistenceDiagram):
@@ -22,14 +22,14 @@ class NeuronMorphologyPersistenceDiagram(PersistenceDiagram):
             return None
 
     @classmethod
-    def get_persistence_data(cls, filename: str) -> Optional[List]:
+    def get_persistence_data(cls, filename: str, neurite_type: NeuriteType) -> Optional[List]:
 
         try:
             morphology = Morphology(filename, Option.soma_sphere)
             neuron = load_neuron_from_morphio(morphology)
 
             return get_ph_neuron(
-                neuron, neurite_type=PersistenceDiagram.NEURITE_TYPE,
+                neuron, neurite_type=neurite_type.value,
                 feature=PersistenceDiagram.FILTRATION_METRIC
             )
 

@@ -10,16 +10,21 @@ from similarity_tools.registration.registration_exception import ModelBuildingEx
 from similarity_tools.helpers.utils import encode_id_rev, encode_id_rev_resource
 
 from typing import List, Optional, Dict
+from enum import Enum
+
+
+class NeuriteType(Enum):
+    BASAL_DENDRITE = "basal_dendrite"
+    APICAL_DENDRITE = "apical_dendrite"
+    AXON = "axon"
 
 
 class PersistenceDiagram(ABC):
-
-    NEURITE_TYPE = "basal_dendrite"
     FILTRATION_METRIC = "path_distances"
 
     @classmethod
     @abstractmethod
-    def get_persistence_data(cls, filename: str) -> Optional[List]:
+    def get_persistence_data(cls, filename: str, neurite_type: NeuriteType) -> Optional[List]:
         pass
 
     @classmethod
@@ -89,17 +94,20 @@ class PersistenceDiagram(ABC):
     @classmethod
     def recompute_persistence_diagrams(
             cls,
-            download_dir: str, forge: KnowledgeGraphForge,
-            persistence_diagram_location: str, data: List[Resource],
-            re_download: bool
+            download_dir: str,
+            forge: KnowledgeGraphForge,
+            persistence_diagram_location: str,
+            data: List[Resource],
+            re_download: bool,
+            neurite_type: NeuriteType
     ):
 
         id_to_filename: Dict[str, str] = cls.get_distributions(
             data=data, forge=forge, download_dir=download_dir, download=re_download
         )
 
-        computation:  Dict[str, Optional[List]] = dict(
-            (k, cls.get_persistence_data(v)) for k, v in id_to_filename.items()
+        computation: Dict[str, Optional[List]] = dict(
+            (k, cls.get_persistence_data(v, neurite_type)) for k, v in id_to_filename.items()
         )
 
         diagrams: Dict[str, List] = dict(
@@ -121,8 +129,9 @@ class PersistenceDiagram(ABC):
             forge: KnowledgeGraphForge,
             data: Optional[List[Resource]],
             persistence_diagram_location: str,
-            download_dir: str
-    ):
+            download_dir: str,
+            neurite_type: NeuriteType
+    ) -> Dict[str, List]:
 
         if (data is None or forge is None) and re_compute:
             raise ModelBuildingException("Missing data or forge instance, cannot recompute")
@@ -133,7 +142,8 @@ class PersistenceDiagram(ABC):
                 download_dir=download_dir,
                 forge=forge,
                 data=data,
-                re_download=re_download
+                re_download=re_download,
+                neurite_type=neurite_type
             )
         else:
             with open(persistence_diagram_location, "r") as f:

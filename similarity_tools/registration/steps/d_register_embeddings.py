@@ -25,7 +25,8 @@ def register_model_embeddings(
     model_description: ModelDescription,
     model: Optional[Resource] = None,
     resource_id_rev_list: Optional[List[Tuple[str, str]]] = None,
-    embedding_tag_transformer: Optional[Callable[[str], str]] = None
+    embedding_tag_transformer: Optional[Callable[[str], str]] = None,
+    bluegraph: bool = False
 ) -> Tuple[str, int]:
     """
 
@@ -71,7 +72,7 @@ def register_model_embeddings(
     model_tag = embedding_tag_transformer(model_tag) if embedding_tag_transformer is not None \
         else model_tag
 
-    logger.info("3. Getting embedding vectors from model pipeline")  # TODO fetch all and compare?
+    logger.info("3. Getting embedding vectors from model pipeline")
 
     missing_list, embedding_dict = get_embedding_vectors_from_pipeline(
         pipeline=pipeline, resource_id_rev_list=resource_id_rev_list
@@ -88,7 +89,8 @@ def register_model_embeddings(
         model_revision=model_revision,
         model_id=model_id,
         embedding_tag=model_tag,
-        mapping_path=EMBEDDING_MAPPING_PATH
+        mapping_path=EMBEDDING_MAPPING_PATH,
+        bluegraph=bluegraph
     )
 
     logger.info(f">  Embedding tags: {embedding_tag}")

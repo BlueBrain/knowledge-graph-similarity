@@ -18,7 +18,7 @@ def register_model(
 ) -> str:
 
     pipeline_directory = os.path.join(DST_DATA_DIR, PIPELINE_SUBDIRECTORY)
-    load_pipeline_path = os.path.join(pipeline_directory, f"{model_description.filename}.zip")
+    load_pipeline_path = os.path.join(pipeline_directory, model_description.filename)
 
     logger.info(f">  Location: {model_bc}")
 

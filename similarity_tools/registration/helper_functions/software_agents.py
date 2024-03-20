@@ -32,17 +32,22 @@ def _software_agent_bluegraph():
 def _software_agent_similarity_tools():
     return {
         "type": "SoftwareAgent",
-        "description": "Tools for performing knowledge inference.",
-        "name": "KG Inference",
+        "description": "Tools for performing registration of data for similarity-based inference.",
+        "name": "KG Inference Similarity",
         "softwareSourceCode": {
             "type": "SoftwareSourceCode",
-            "codeRepository": "https://bbpgitlab.epfl.ch/dke/apps/kg-inference",
+            "codeRepository": "https://bbpgitlab.epfl.ch/dke/apps/kg-inference-similarity",
             "branch": get_git_branch(),
             "commit": get_git_revision_hash(),
             "programmingLanguage": "Python",
             "runtimePlatform": get_python_version()
         }
     }
+
+
+def get_wasAssociatedWith(bluegraph: bool):
+    return [_software_agent_similarity_tools()] if not bluegraph \
+        else [_software_agent_similarity_tools(), _software_agent_bluegraph()]
 
 
 def get_bluegraph_version():

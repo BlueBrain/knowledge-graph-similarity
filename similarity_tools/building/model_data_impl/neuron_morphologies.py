@@ -21,23 +21,17 @@ class NeuronMorphologies(ModelData):
     morphologies_br_df: pd.DataFrame
 
     def __init__(
-            self, org, project, src_data_dir=None, dst_data_dir=None,
-            get_annotations=True,
-            deployment=Deployment.PRODUCTION, config_file_path=None
+            self,
+            bucket_configuration: NexusBucketConfiguration,
+            src_data_dir=None,
+            dst_data_dir=None
     ):
 
         super().__init__(
-            src_data_dir=src_data_dir, dst_data_dir=dst_data_dir, org=org, project=project,
-            deployment=deployment
+            src_data_dir=src_data_dir, dst_data_dir=dst_data_dir,
+            org=bucket_configuration.organisation, project=bucket_configuration.project,
+            deployment=bucket_configuration.deployment
         )
-
-        bucket_configuration = NexusBucketConfiguration(
-            self.org, self.project, deployment=deployment,
-            config_file_path=config_file_path,
-            sparql_view="https://bluebrain.github.io/nexus/vocabulary/defaultSparqlIndex"
-        )
-
-        self.forge = bucket_configuration.allocate_forge_session()
 
     def brain_region_dataframe(self, full_df) -> pd.DataFrame:
 

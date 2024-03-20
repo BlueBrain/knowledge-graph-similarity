@@ -7,8 +7,7 @@ from inference_tools.datatypes.similarity.statistic import Statistic
 from inference_tools.similarity.formula import Formula
 from inference_tools.similarity.queries.get_neighbors import get_neighbors
 from similarity_tools.helpers.elastic import ElasticSearch
-from similarity_tools.registration.helper_functions.software_agents import \
-    _software_agent_similarity_tools, _software_agent_bluegraph
+from similarity_tools.registration.helper_functions.software_agents import get_wasAssociatedWith
 from similarity_tools.helpers.logger import logger
 from similarity_tools.registration.registration_exception import SimilarityToolsException
 from similarity_tools.registration.types import Types
@@ -37,7 +36,7 @@ def compute_statistics(
             vector_id=vector_resource.id,
             k=len(all_vectors),
             score_formula=score_formula,
-            use_forge=False,
+            use_resources=False,
             debug=False,
             derivation_type=derivation_type
         )
@@ -99,7 +98,7 @@ def register_stats(
         }
 
         stats_resource = forge.map(json_data, mapping)
-        stats_resource.generation.activity.wasAssociatedWith = _software_agent_similarity_tools()
+        stats_resource.generation.activity.wasAssociatedWith = get_wasAssociatedWith(bluegraph=False)
 
         forge.register(stats_resource)
 
