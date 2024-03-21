@@ -128,7 +128,8 @@ def get_embedding_vectors_from_pipeline(
 
 
 def register_embeddings(
-        forge: KnowledgeGraphForge,
+        forge_data: KnowledgeGraphForge,
+        forge_push: KnowledgeGraphForge,
         vectors: Dict[Tuple[str, int], List[float]],
         model_id: str,
         model_revision: int,
@@ -139,8 +140,10 @@ def register_embeddings(
     """
     Register and updates embedding vectors
 
-    @param forge: a forge instance
-    @type forge: KnowledgeGraphForge
+    @param forge_data: a forge instance tied to the bucket where the model and the resources being embedded are
+    @type forge_data: KnowledgeGraphForge
+    @param forge_push: a forge instance tied to the bucket where the embeddings will be pushed
+    @type forge_push: KnowledgeGraphForge
     @param vectors: a dictionary with keys the entity ids + rev and the values the associated
     embedding vectors
     @type vectors: Dict[Tuple[str, int], List[int]]
@@ -167,12 +170,12 @@ def register_embeddings(
 
     for (entity_id_i, entity_rev_i), embedding_vector_i in vectors.items():
 
-        resource = forge.retrieve(entity_id_i)
+        resource = forge_data.retrieve(entity_id_i)
 
         assert resource
 
         existing_vectors_i: List[Resource] = _search(
-            entity_id=entity_id_i, forge=forge, model_id=model_id
+            entity_id=entity_id_i, forge=forge_data, model_id=model_id
         )
 
         # Embedding vector for this entity and this model exists, update it
@@ -197,17 +200,16 @@ def register_embeddings(
                 entity_rev=entity_rev_i,
                 entity_type=resource.type,
                 embedding=embedding_vector_i,
-                forge=forge,
+                forge=forge_push,
                 model_id=model_id,
                 model_revision=model_revision,
                 mapping=mapping,
                 bluegraph=bluegraph
-
             )
             new_embeddings.append(created)
 
-    _persist(new_embeddings, True, forge=forge, tag=embedding_tag, obj_str="embeddings")
-    _persist(updated_embeddings, False, forge=forge, tag=embedding_tag, obj_str="embeddings")
+    _persist(new_embeddings, True, forge=forge_push, tag=embedding_tag, obj_str="embeddings")
+    _persist(updated_embeddings, False, forge=forge_push, tag=embedding_tag, obj_str="embeddings")
 
     vector_dimension = len(list(vectors.values())[0])
 

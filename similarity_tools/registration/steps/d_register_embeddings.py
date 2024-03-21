@@ -21,7 +21,8 @@ from similarity_tools.registration.step import Step
 
 
 def register_model_embeddings(
-    model_bc: NexusBucketConfiguration,
+    data_bc: NexusBucketConfiguration,
+    push_bc: NexusBucketConfiguration,
     model_description: ModelDescription,
     model: Optional[Resource] = None,
     resource_id_rev_list: Optional[List[Tuple[str, str]]] = None,
@@ -30,8 +31,10 @@ def register_model_embeddings(
 ) -> Tuple[str, int]:
     """
 
-    @param model_bc:
-    @type model_bc: NexusBucketConfiguration
+    @param data_bc: a bucket configuration pointing to where the data being embedded is located
+    @type data_bc: NexusBucketConfiguration
+    @param push_bc: a bucket configuration pointing to where the embeddings will be pushed
+    @type push_bc: NexusBucketConfiguration
     @param model_description:
     @type model_description: ModelDescription
     # @param entity_type: the type of the entities being embedded
@@ -45,10 +48,13 @@ def register_model_embeddings(
     user specified tag (can be an entirely new tag or a transformation of the default one). The
     default one is used if no transformation is provided
     @type embedding_tag_transformer Optional[Callable[[str], str]]
+    @param bluegraph: whether the embedding process was done using the bluegraph library or not
+    (and therefore whether it should be added to the derivation and generation of embeddings)
+    @type bluegraph: bool
     @return: the tag applied to the embeddings, and the vector dimension of the embeddings
     @rtype: Tuple[str, int]
     """
-    forge_model = model_bc.allocate_forge_session()
+    forge_model = data_bc.allocate_forge_session()
 
     if model is None:
         logger.info("1. Fetching model")
@@ -83,8 +89,11 @@ def register_model_embeddings(
 
     logger.info("4. Registering embeddings")
 
+    forge_push = push_bc.allocate_forge_session()
+
     embedding_tag, vector_dimension = register_embeddings(
-        forge=forge_model,
+        forge_data=forge_model,  # We assume that the data is located in the same bucket as the data, up to change
+        forge_push=forge_push,
         vectors=embedding_dict,
         model_revision=model_revision,
         model_id=model_id,
