@@ -72,7 +72,6 @@ def _get_token(deployment: Deployment, username: str, password: str):
     return resp.json()["access_token"]
 
 
-
 class NexusBucketConfiguration:
 
     config_prod_path = "https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml"

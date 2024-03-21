@@ -97,4 +97,3 @@ class Vectorisation:
         return lambda ph: vectorizations.life_entropy_curve(
             ph, bins=bins, num_bins=num_bins
         )[0]
-

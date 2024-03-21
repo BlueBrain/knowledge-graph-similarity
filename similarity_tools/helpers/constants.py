@@ -1,7 +1,7 @@
 from similarity_tools.helpers.utils import get_path
 
-SRC_DATA_DIR = get_path("../data/")
-DST_DATA_DIR = get_path("../data/")
+SRC_DATA_DIR = get_path("../data_2/")
+DST_DATA_DIR = get_path("../data_2/")
 PIPELINE_SUBDIRECTORY = "pipelines/"
 PLOT_SUBDIRECTORY = "plots/"
 TSNE_SUBDIRECTORY = "tsne/"
