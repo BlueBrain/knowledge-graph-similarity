@@ -31,24 +31,48 @@ with open(model_path2, "r") as f:
     model_content_encoded = json.load(f)
 
 
+# https://stackoverflow.com/questions/57211362/how-to-convert-binary-data-back-to-a-float-array-in-elasticsearch-painless
+
 script_source = """
-    byte[] vector_bytes = doc["embedding"].value.bytes;
-
-    int length = vector_bytes.length/4;
     
-    float[] vector = new float[length];
-
-    def x = 255;
-
-    for (int i = 0; i < length; ++i) {
-        def n = i*4;
-        vector[i] = Float.intBitsToFloat( (vector_bytes[n+3] << 24) | ((vector_bytes[n+2] & x) << 16) |  ((vector_bytes[n+1] & x) << 8) |  (vector_bytes[n] & x) );   
+    byte[] toBytes(String x) { 
+    
+        int length = x.length();
+        
+        char[] buffer = new char[length];
+    
+        x.getChars(0, length, buffer, 0);
+    
+        byte[] b = new byte[length];
+        
+        for (int j = 0; j < length; j++){
+            b[j] = (byte) buffer[j];
+        } 
+        return b;
     }
+    
+    float[] toFloat(byte[] arr) {
+    
+        int length = arr.length/4;
+    
+        float[] vector = new float[length];
+    
+        for (int i = 0; i < length; ++i) {
+            def n = i*4;
+            vector[i] = Float.intBitsToFloat( (arr[n+3] << 24) | ((arr[n+2] & 255) << 16) |  ((arr[n+1] & 255) << 8) |  (arr[n] & 255) );   
+        }
+        
+        return vector;
+    }
+
+    float[] vector = toFloat(doc["embedding"].value.bytes);
+    
+    float[] q_vector = toFloat(Base64.getDecoder().decode(params.query_vector));
 
     float distance = 0;
     
-    for (int i = 0; i < length; ++i) {
-        distance += Math.abs(vector[i] - params.query_vector[i]);
+    for (int i = 0; i < q_vector.length; ++i) {
+        distance += Math.abs(vector[i] - q_vector[i]);
     }
 
     return 1/(1+distance);
@@ -64,36 +88,10 @@ vector_parsed_script = """
     return vector;
 """
 
-# TODO I can't seem to decode the param vector in painless. The length after decoding is lower than 4*10000 for some reason.
-#  Also the getBytes() method of java String-s is not exposed to I had to "re-implement it"
-#   see https://stackoverflow.com/questions/12239993/why-is-the-native-string-getbytes-method-slower-than-the-custom-implemented-getb
-
-# String a = params.query_vector.replace('-', '+').replace('_', '/').decodeBase64();
-#
-# int length_2 = a.length();
-#
-# char[]  buffer = new char[length_2];
-#
-# a.getChars(0, length_2, buffer, 0);
-#
-# byte[] b = new byte[length_2];
-#
-# for (int j = 0; j < length_2; j++){
-#     b[j] = (byte) buffer[j];
-# }
-
-
 def query_check(embedding_resource):
-    embedding = embedding_resource.embedding
+    embedding = embedding_resource.embedding if not isinstance(embedding_resource.embedding, list) else embedding_resource.embedding[0]
     embedding_derivation = next(i for i in embedding_resource.derivation if "NeuronMorphology" in i.entity.type).entity.id
 
-    if isinstance(embedding, list):
-        embedding = embedding[0]
-
-    embedding = base64.b64decode(embedding)
-    embedding = list(struct.unpack(f'10000f', embedding))
-
-    # print("Initial embedding derivation", embedding_derivation)
 
     query = {
         "from": 0,
@@ -129,13 +127,13 @@ def query_check(embedding_resource):
     }
 
     res = forge.elastic(json.dumps(query), as_resource=False)
-    # print([re["_score"] for re in res])
 
     res_i = res[0]
     derivation = next(i for i in res_i["_source"]["derivation"] if "NeuronMorphology" in i["entity"]["@type"])["entity"]["@id"]
 
+    # print("Initial embedding derivation", embedding_derivation)
     # print("First result derivation", derivation)
-    # print(derivation, embedding_derivation)
+    # print([re["_score"] for re in res])
 
     encoded_local = model_content_encoded[next(i for i in model_content_encoded.keys() if i.startswith(derivation))]
 
