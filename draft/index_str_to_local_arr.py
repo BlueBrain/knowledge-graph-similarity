@@ -13,24 +13,18 @@ forge = NexusBucketConfiguration(
     deployment=Deployment.STAGING, elastic_search_view=es_view_id
 ).allocate_forge_session()
 
-embedding_resources = forge.search({"type": "Embedding"}, limit=200)
-
+embedding_resources = forge.search({"type": "Embedding"}, limit=200, search_endpoint="elastic")
 
 org, project = "public", "thalamus"
 
-model_path = os.path.join(
-    DST_DATA_DIR, PIPELINE_SUBDIRECTORY,
-    f"morph_TMD_image_data_100_{org}_{project}_production.json"
-)
+model_path = f"morph_TMD_image_data_100_{org}_{project}_production.json"
+
 
 # Get vector from initial model dict
 with open(model_path, "r") as f:
     model_content = json.load(f)
 
-model_path2 = os.path.join(
-    DST_DATA_DIR, PIPELINE_SUBDIRECTORY,
-    f"morph_TMD_image_data_base64_100_{org}_{project}_production.json"
-)
+model_path2 = f"morph_TMD_image_data_base64_100_{org}_{project}_production.json"
 
 # Get vector from encoded initial model dict
 with open(model_path2, "r") as f:
@@ -69,6 +63,10 @@ vector_parsed_script = """
     }
     return vector;
 """
+
+# TODO I can't seem to decode the param vector in painless. The length after decoding is lower than 4*10000 for some reason.
+#  Also the getBytes() method of java String-s is not exposed to I had to "re-implement it"
+#   see https://stackoverflow.com/questions/12239993/why-is-the-native-string-getbytes-method-slower-than-the-custom-implemented-getb
 
 # String a = params.query_vector.replace('-', '+').replace('_', '/').decodeBase64();
 #
@@ -131,27 +129,27 @@ def query_check(embedding_resource):
     }
 
     res = forge.elastic(json.dumps(query), as_resource=False)
-    print([re["_score"] for re in res])
+    # print([re["_score"] for re in res])
 
     res_i = res[0]
     derivation = next(i for i in res_i["_source"]["derivation"] if "NeuronMorphology" in i["entity"]["@type"])["entity"]["@id"]
 
     # print("First result derivation", derivation)
-    print(derivation, embedding_derivation)
+    # print(derivation, embedding_derivation)
 
     encoded_local = model_content_encoded[next(i for i in model_content_encoded.keys() if i.startswith(derivation))]
 
     assert encoded_local == res_i["_source"]["embedding"]
 
-    initial_vector = model_content[next(i for i in model_content.keys() if i.startswith(derivation))]
-
-    # Get vector parsed from ES
-    parsed = res_i['fields']['vector_parsed'][0]
-
-    # Get vector from ES and parse it with python
-    decoded = base64.b64decode(res_i["_source"]["embedding"])
-    parsed_python = struct.unpack(f'{len(initial_vector)}f', decoded)
-
+    # initial_vector = model_content[next(i for i in model_content.keys() if i.startswith(derivation))]
+    #
+    # # Get vector parsed from ES
+    # parsed = res_i['fields']['vector_parsed'][0]
+    #
+    # # Get vector from ES and parse it with python
+    # decoded = base64.b64decode(res_i["_source"]["embedding"])
+    # parsed_python = struct.unpack(f'{len(initial_vector)}f', decoded)
+    #
     # try:
     #     for i in range(10000):
     #         assert round(parsed[i], 5) == round(parsed_python[i], 5)
@@ -162,9 +160,5 @@ def query_check(embedding_resource):
     return derivation == embedding_derivation
 
 
-check_over_100 = [query_check(embedding_resource) for embedding_resource in embedding_resources]
-print(len([i for i in check_over_100 if i]))
-print(len([i for i in check_over_100 if not i]))
-
-
-
+check_over_all = [query_check(embedding_resource) for embedding_resource in embedding_resources]
+print(len([i for i in check_over_all if i]))
