@@ -3,6 +3,7 @@ from tmd.Topology import vectorizations
 import base64
 import struct
 
+
 class Vectorisation:
 
     PERSISTENCE_IMAGE_RESOLUTION = 100

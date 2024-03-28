@@ -135,5 +135,3 @@ for org, project in buckets:
 #     ],
 #     target_type="NeuronMorphology"
 # )
-
-
