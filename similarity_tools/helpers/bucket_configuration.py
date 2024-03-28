@@ -77,8 +77,12 @@ class NexusBucketConfiguration:
     config_prod_path = "https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml"
 
     def __init__(
-            self, organisation: str, project: str, deployment: Deployment,
-            elastic_search_view: str = None, sparql_view: str = None,
+            self,
+            organisation: str,
+            project: str,
+            deployment: Deployment,
+            elastic_search_view: str = None,
+            sparql_view: str = None,
             config_file_path: str = None,
             token_getter: Callable[[Deployment], str] = get_token_from_file
     ):
@@ -141,3 +145,17 @@ class NexusBucketConfiguration:
 
     def __repr__(self):
         return f" {self.organisation}/{self.project} in {self.deployment.name.lower()}"
+
+    def __eq__(self, other):
+        if not isinstance(other, NexusBucketConfiguration):
+            return False
+
+        return (
+            self.deployment == other.deployment and
+            self.endpoint == other.endpoint and
+            self.organisation == other.organisation and
+            self.project == other.project and
+            self.elastic_search_view == other.elastic_search_view and
+            self.sparql_view == other.sparql_view and
+            self.config_file_path == other.config_file_path
+        )

@@ -7,3 +7,4 @@ venv/
 token/
 data/
 **/__pycache__/
+draft/

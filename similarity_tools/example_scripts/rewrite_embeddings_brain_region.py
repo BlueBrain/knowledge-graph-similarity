@@ -18,7 +18,6 @@ deployment = Deployment.PRODUCTION
 #     embedding_tag, vector_dimension = ModelRegistrationPipeline.get_step(Step.REGISTER_EMBEDDINGS).run(
 #         model_bc=NexusBucketConfiguration(organisation=org, project=project, deployment=deployment),
 #         model_description=bbp_brain_region_bmo_model_description,
-#         entity_type="NeuronMorphology",
 #         embedding_tag_transformer=lambda x: x + "_1"
 #         # there are already embeddings pushed for the latest revision of the specified model,
 #         # in order not to overwrite them, this new version will be tagged by another tag,

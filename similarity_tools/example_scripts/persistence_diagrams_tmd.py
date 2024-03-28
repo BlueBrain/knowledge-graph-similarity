@@ -1,49 +1,139 @@
+import os
+import numpy as np
+import copy
+import tmd.Topology.distances
+
+from similarity_tools.building.model_descriptions.model_desc_list_no_class import new_tmd_model_description
+from similarity_tools.building.model_impl.tmd_model.persistence_diagram.persistence_diagram import \
+    NeuriteType
+from similarity_tools.building.model_impl.tmd_model.vectorisation import Vectorisation
 from similarity_tools.helpers.bucket_configuration import NexusBucketConfiguration, Deployment
 
-from similarity_tools.building.model_impl.tmd_model.tmd_model import TMDModel
+from similarity_tools.building.model_impl.tmd_model.tmd_model import TMDModelNew, \
+    VectorisationTechnique
 
-from similarity_tools.building.model_data_impl.morphology_models import ModelDataMorphologyModels
 from similarity_tools.building.model_data_impl.neuron_morphologies_query import \
     NeuronMorphologiesQuery
 
-from similarity_tools.building.model_impl.tmd_model.tmd_model_with_mm import TMDModelWithMM, \
-    UnscaledTMDModelWithMM
+from tmd.Topology.vectorizations import get_limits
 
-import numpy as np
+from similarity_tools.helpers.constants import DST_DATA_DIR, PIPELINE_SUBDIRECTORY
+from similarity_tools.registration.model_registration_pipeline import ModelRegistrationPipeline
+from similarity_tools.registration.step import Step
 
-re_download = True
-re_compute = True
+buckets = [
+    ("public", "thalamus"),
+    # ("bbp-external", "seu"),
+    # ("bbp", "mouselight"),
+    # ("public", "sscx"),
+    # ("public", "hippocampus")
+]
 
-deployment = Deployment.PRODUCTION
-
-# bucket_models = NexusBucketConfiguration(
-#     organisation="bbp", project="mmb-point-neuron-framework-model", deployment=deployment
+# new_tmd_model_description.filename = f"morph_TMD_image_data_base64_100"
+#
+# Vectorisation.BASE64 = True
+#
+# model_data_s = dict(
+#     (
+#         (org, project),
+#         NeuronMorphologiesQuery(
+#             bucket_configuration=NexusBucketConfiguration(
+#                 organisation=org, project=project, deployment=Deployment.PRODUCTION
+#             ),
+#             get_annotations=False
+#         )
+#     )
+#     for (org, project) in buckets
 # )
 #
-# test = UnscaledTMDModelWithMM(
-#     model_data=ModelDataMorphologyModels(bucket_configuration=bucket_models),
-#     re_compute=re_compute, re_download=re_download
+# morphology_tmd_models = dict(
+#     (
+#         (org, project),
+#         TMDModelNew(
+#             model_data=model_data,
+#             re_compute=False,
+#             re_download=False,
+#             neurite_type=NeuriteType.BASAL_DENDRITE
+#         )
+#     )
+#     for (org, project), model_data in model_data_s.items()
 # )
-# print(test.run())
+#
+# list_of_ph = [
+#     e
+#     for morphology_tmd in morphology_tmd_models.values()
+#     for e in list(morphology_tmd.nm_persistence_diagrams.values())
+# ]
+#
+# xlim, ylim = get_limits(list_of_ph)
+#
+# diagrams = dict(
+#     (
+#         (org, project),
+#         TMDModelNew.run_static(
+#             vectorisation_technique=VectorisationTechnique.PERSISTENCE_IMAGE_DATA,
+#             nm_persistence_diagrams=morphology_tmd.nm_persistence_diagrams,
+#             xlim=xlim,
+#             ylim=ylim
+#         )
+#     )
+#     for (org, project), morphology_tmd in morphology_tmd_models.items()
+# )
+#
+# for bucket in buckets:
+#     pipeline = diagrams[bucket]
+#     model_data = model_data_s[bucket]
+#     e = ModelRegistrationPipeline.get_step(Step.SAVE_MODEL).run(
+#         model_description=new_tmd_model_description, model_data=model_data, pipeline=pipeline
+#     )
+#
+# exit()
 
-bucket_morphologies = NexusBucketConfiguration(
-    organisation="public", project="thalamus", deployment=deployment
+push_bc = NexusBucketConfiguration(
+    organisation="SarahTest", project="PublicThalamusTest2", deployment=Deployment.STAGING,
 )
 
-NeuronMorphologiesQuery.LIMIT = 2
+fn = copy.deepcopy(new_tmd_model_description.filename)
 
-morphology_tmd = TMDModel(
-    model_data=NeuronMorphologiesQuery(
-        org=bucket_morphologies.organisation, project=bucket_morphologies.project,
-        get_annotations=False
-    ),
-    re_compute=re_compute, re_download=re_download
-)
+for org, project in buckets:
 
-# See building/model_impl/tmd_model/tmd_model.py
-# uses Vectorisation.build_vectors_from_tmd_implementations
-diagrams = morphology_tmd.run()
-# 3 per morphology: persistence image data, betti curve, life entropy curve
+    model_bc = NexusBucketConfiguration(
+        organisation=org, project=project, deployment=Deployment.PRODUCTION
+    )
 
-for id_, (persistence_image_data, betti_curve, life_entropy_curve) in diagrams.items():
-    print(np.shape(persistence_image_data), np.shape(betti_curve), np.shape(life_entropy_curve))
+    # e = ModelRegistrationPipeline.get_step(Step.REGISTER_MODEL).run(
+    #     model_description=new_tmd_model_description,
+    #     model_bc=model_bc,
+    # )
+
+    model_path = os.path.join(
+        DST_DATA_DIR, PIPELINE_SUBDIRECTORY,
+        f"morph_TMD_image_data_base64_100_{org}_{project}_production.json"
+    )
+
+    # embedding_tag, vector_dimension = ModelRegistrationPipeline.get_step(Step.REGISTER_EMBEDDINGS).run(
+    #     data_bc=model_bc,
+    #     push_bc=push_bc,
+    #     model_path=model_path,
+    #     tag="test_tag3"
+    #     # model_description=new_tmd_model_description
+    #     # model_bc=model_bc
+    # )
+
+    # view_id = ModelRegistrationPipeline.get_step(Step.REGISTER_SIMILARITY_VIEW).run(
+    #     bucket_configuration=push_bc,
+    #     resource_tag="test_tag3",
+    #     vector_dimension=53336
+    # )
+
+# e = ModelRegistrationPipeline.get_step(Step.REGISTER_EMBEDDING_MODEL_CATALOG).run(
+#     model_name=new_tmd_model_description.name,
+#     joint_bc=NexusBucketConfiguration(organisation="bbp", project="atlas", deployment=deployment),
+#     bucket_list_rev=[
+#         (NexusBucketConfiguration(organisation=org, project=project, deployment=deployment), None)
+#         for org, project in buckets
+#     ],
+#     target_type="NeuronMorphology"
+# )
+
+

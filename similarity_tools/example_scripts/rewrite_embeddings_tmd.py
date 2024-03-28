@@ -30,7 +30,6 @@ for org, project in [
     embedding_tag, vector_dimension = ModelRegistrationPipeline.get_step(Step.REGISTER_EMBEDDINGS).run(
         model_bc=NexusBucketConfiguration(organisation=org, project=project, deployment=deployment),
         model_description=unscaled_model_description,
-        # entity_type="NeuronMorphology",
         embedding_tag_transformer=lambda x: x + "_2",
         resource_id_rev_list=resource_id_rev_list
         # there are already embeddings pushed for the latest revision of the specified model,

@@ -67,7 +67,7 @@ def add_contribution(resource: Dataset, forge: KnowledgeGraphForge) -> Dataset:
 
 
 def _persist(
-        entities: List[Resource], creation: bool, forge: KnowledgeGraphForge, tag: str, obj_str: str
+        entities: List[Resource], creation: bool, forge: KnowledgeGraphForge, tag: Optional[str], obj_str: str
 ):
     verb_a, verb_b, verb_c = \
         ("creating", "created", "create") if creation else ("updating", "updated", "update")
@@ -91,7 +91,8 @@ def _persist(
             if not creation:
                 entities = list(map(synchronize, entities))
 
-            forge.tag(entities, tag)
+            if tag:
+                forge.tag(entities, tag)
         else:
             errors = [
                 e for e in map(lambda res: res._last_action.error, entities) if e is not None

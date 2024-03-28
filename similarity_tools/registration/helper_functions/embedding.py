@@ -16,41 +16,56 @@ from similarity_tools.helpers.utils import encode_id_rev, get_model_tag, parse_i
 
 
 def load_embedding_model(
-        forge: KnowledgeGraphForge,
-        model_id: str,
+        forge: Optional[KnowledgeGraphForge],
+        model_id: Optional[str] = None,
         model_revision: Optional[int] = None,
         download_dir: str = ".",
-) -> Tuple[int, str, EmbeddingPipeline]:
+        path: Optional[str] = None,
+        tag: Optional[str] = None
+) -> Tuple[Optional[int], Optional[str], Union[Dict, EmbeddingPipeline]]:
     """
     Load embedding model embedding pipeline zip file into memory
-    @param forge: a forge instance
-    @type forge: KnowledgeGraphForge
+    @param forge: a forge instance to fetch the model with, if no path is provided and a model id is provided
+    @type forge: Optional[KnowledgeGraphForge]
     @param model_id: the id of the model
-    @type model_id: str
+    @type model_id: Optional[str]
     @param model_revision: the revision of the model
     @type model_revision: Optional[int]
     @param download_dir: where to download the model distribution locally
     @type download_dir: str
-    @return: the specified model revision if it was specified else the latest,
-    a tag made of the concatenation of the model uuid and rev, and the model embedding pipeline
-    @rtype: Tuple[int, str, EmbeddingPipeline]
+    @param tag: a tag to apply to the embeddings.
+    @type tag: Optional[str]
+    @param path: a path where the model distribution is located, instead of providing a model id
+    @return:
+    In the case of a model loaded with a model id:
+    - the specified model revision if it was specified else the latest,
+    - The provided tag else a tag made of the concatenation of the model uuid and rev
+    - and the model embedding pipeline
+    In the case of a model loaded with a path: no model revision, the provided tag else no tag, and the model embedding pipeline
+    @rtype: Tuple[Optional[int], Optional[str], Union[Dict, EmbeddingPipeline]]
     """
 
     retrieval_str = f"{model_id}{'?rev='}{model_revision}" \
         if model_revision is not None else model_id
 
-    model = forge.retrieve(retrieval_str)
+    if path is None:
+        model = forge.retrieve(retrieval_str)
 
-    # If revision is not provided by the user, fetch the latest
-    model_revision = model_revision if model_revision is not None else model._store_metadata._rev
+        # If revision is not provided by the user, fetch the latest
+        model_revision = model_revision if model_revision is not None else model._store_metadata._rev
 
-    model_tag = get_model_tag(model_id, model_revision)
+        if tag:
+            logger.info(f">  The provided tag {tag} will be applied on the embeddings")
+        model_tag = get_model_tag(model_id, model_revision) if tag is None else tag
+        forge.download(
+            model, "distribution.contentUrl", download_dir, overwrite=True
+        )
 
-    forge.download(
-        model, "distribution.contentUrl", download_dir, overwrite=True
-    )
+        path = os.path.join(download_dir, model.distribution.name)
+    else:
+        model_revision = None
+        model_tag = tag
 
-    path = os.path.join(download_dir, model.distribution.name)
     if "json" in path:
         with open(path, "r") as f:
             pipeline = json.load(f)
@@ -133,7 +148,7 @@ def register_embeddings(
         vectors: Dict[Tuple[str, int], List[float]],
         model_id: str,
         model_revision: int,
-        embedding_tag: str,
+        embedding_tag: Optional[str],
         mapping_path: str,
         bluegraph: bool
 ) -> Tuple[str, int]:
@@ -151,8 +166,8 @@ def register_embeddings(
     @type model_id: str
     @param model_revision: the revision of the embedding model
     @type model_revision: int
-    @param embedding_tag:
-    @type embedding_tag: str
+    @param embedding_tag: a tag to apply to the embedding
+    @type embedding_tag: Optional[str]
     @param mapping_path: the path to a mapping indicating an embedding's format
     @type mapping_path: str
     # @param entity_type: the type of the entity that's been embedded
@@ -175,7 +190,7 @@ def register_embeddings(
         assert resource
 
         existing_vectors_i: List[Resource] = _search(
-            entity_id=entity_id_i, forge=forge_data, model_id=model_id
+            entity_id=entity_id_i, forge=forge_push, model_id=model_id
         )
 
         # Embedding vector for this entity and this model exists, update it

@@ -23,56 +23,92 @@ from similarity_tools.registration.step import Step
 def register_model_embeddings(
     data_bc: NexusBucketConfiguration,
     push_bc: NexusBucketConfiguration,
-    model_description: ModelDescription,
+    model_description: Optional[ModelDescription] = None,
+    model_bc: Optional[NexusBucketConfiguration] = None,
+    model_path: Optional[str] = None,
     model: Optional[Resource] = None,
     resource_id_rev_list: Optional[List[Tuple[str, str]]] = None,
     embedding_tag_transformer: Optional[Callable[[str], str]] = None,
-    bluegraph: bool = False
+    bluegraph: bool = False,
+    tag: Optional[str] = None
 ) -> Tuple[str, int]:
     """
 
     @param data_bc: a bucket configuration pointing to where the data being embedded is located
     @type data_bc: NexusBucketConfiguration
+    @param model_bc: a bucket configuration pointing to where model is located
+    @type model_bc: NexusBucketConfiguration
     @param push_bc: a bucket configuration pointing to where the embeddings will be pushed
     @type push_bc: NexusBucketConfiguration
     @param model_description:
-    @type model_description: ModelDescription
-    # @param entity_type: the type of the entities being embedded
-    # @type entity_type: str
+    @type model_description: Optional[ModelDescription]
+    @param model_path: where the model pipeline is located, if ever a local copy is used instead of a
+    model resource
+    @type model_path Optional[str]
     @param model:
     @type model: Optional[Resource]
     @param resource_id_rev_list: if ever only a subset of the embeddings should be registered
     @type resource_id_rev_list:
-    @param embedding_tag_transformer: by default, the embedding tag will be a concatenation of
-    the model uuid and its rev. If this parameter is specified, it transforms this tag into a
+    @param tag: a tag to apply to the embeddings
+    @type tag: Optional[str]
+    @param embedding_tag_transformer: by default, the embedding tag will be the provided tag and if none is provided,
+    a concatenation of the model uuid and its rev. If this parameter is specified, it transforms this tag into a
     user specified tag (can be an entirely new tag or a transformation of the default one). The
     default one is used if no transformation is provided
     @type embedding_tag_transformer Optional[Callable[[str], str]]
     @param bluegraph: whether the embedding process was done using the bluegraph library or not
     (and therefore whether it should be added to the derivation and generation of embeddings)
     @type bluegraph: bool
+
+    # @param entity_type: the type of the entities being embedded
+    # @type entity_type: str
+
     @return: the tag applied to the embeddings, and the vector dimension of the embeddings
     @rtype: Tuple[str, int]
     """
-    forge_model = data_bc.allocate_forge_session()
 
-    if model is None:
-        logger.info("1. Fetching model")
-        model = fetch_model(forge_model, model_name=model_description.name)
-        if not model:
-            raise SimilarityToolsException(f"Error retrieving model {model_description.name}")
+    if model_path is None \
+            and (model_description is None and model_bc is None)\
+            and model is None:
+
+        raise Exception(
+            "No way to retrieve the model: No model provided,"
+            " no model path provided, and no model description + model bucket configuration provided"
+        )
+
+    if model_path is None:
+        forge_model = model_bc.allocate_forge_session()
+
+        if model is None:
+            logger.info("1. Fetching model")
+
+            model = fetch_model(
+                forge_model, model_name=model_description.name, model_rev=model_description.model_rev
+            )
+            if not model:
+                raise SimilarityToolsException(f"Error retrieving model {model_description.name}")
+        else:
+            logger.info("1. Model provided")
+
+        model_revision = model._store_metadata.rev
+        model_id = model.id
     else:
-        logger.info("1. Model provided")
-
-    model_id = model.id
+        logger.info("1. Loading model from provided path, the embeddings will not be tagged")
+        forge_model = None
+        model_id = "file"  # TODO not good because forge tried to expand it as an id, and further _search checks will not pass
+        model_revision = None
 
     pipeline_directory = os.path.join(DST_DATA_DIR, PIPELINE_SUBDIRECTORY)
 
     logger.info("2. Loading model in memory")
 
     model_revision, model_tag, pipeline = load_embedding_model(
-        forge_model, model_revision=model_description.model_rev, download_dir=pipeline_directory,
-        model_id=model_id
+        forge=forge_model,
+        model_revision=model_revision,
+        download_dir=pipeline_directory,
+        path=model_path,
+        model_id=model_id,
+        tag=tag
     )
 
     model_tag = embedding_tag_transformer(model_tag) if embedding_tag_transformer is not None \
@@ -89,10 +125,11 @@ def register_model_embeddings(
 
     logger.info("4. Registering embeddings")
 
-    forge_push = push_bc.allocate_forge_session()
+    forge_push = push_bc.allocate_forge_session() if push_bc != model_bc else forge_model
+    forge_data = data_bc.allocate_forge_session() if data_bc != model_bc else forge_model
 
     embedding_tag, vector_dimension = register_embeddings(
-        forge_data=forge_model,  # We assume that the data is located in the same bucket as the data, up to change
+        forge_data=forge_data,
         forge_push=forge_push,
         vectors=embedding_dict,
         model_revision=model_revision,

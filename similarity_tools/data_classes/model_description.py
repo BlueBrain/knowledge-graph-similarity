@@ -7,4 +7,3 @@ class ModelDescription:
         self.distance = model_dictionary["distance"]
         self.model = model_dictionary["model"]
         self.model_rev: int = model_dictionary["rev"]
-        self.init_filename = model_dictionary["filename"]

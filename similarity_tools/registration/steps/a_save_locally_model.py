@@ -29,7 +29,7 @@ def save_locally_model(
 
         pipeline: Union[EmbeddingPipeline, Dict[str, List]] = model_instance.run()
 
-    filename = f"{model_description.init_filename}_{model_data.org}_{model_data.project}_{model_data.deployment.name.lower()}"
+    filename = f"{model_description.filename}_{model_data.org}_{model_data.project}_{model_data.deployment.name.lower()}"
 
     if pipeline is None:
         logger.warning(

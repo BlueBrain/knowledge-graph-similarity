@@ -20,7 +20,7 @@ class MorphologyModelPersistenceDiagram(PersistenceDiagram):
         with open(filename) as f:
             t = json.load(f)
 
-        compartment = t[neurite_type]
+        compartment = t[neurite_type.value]
 
         if compartment["filtration_metric"] != PersistenceDiagram.FILTRATION_METRIC:
 

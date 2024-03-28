@@ -3,6 +3,7 @@ import os
 
 from bluegraph.downstream import EmbeddingPipeline
 
+from similarity_tools.building.model_impl.tmd_model.persistence_diagram.persistence_diagram import NeuriteType
 # from bluegraph.downstream.similarity import (ScikitLearnSimilarityIndex, SimilarityProcessor)
 
 from similarity_tools.data_classes.model import Model
@@ -35,7 +36,8 @@ class TMDModelWithMM(Model):
                 data=model_data.data,
                 download_dir=download_dir,
                 persistence_diagram_location=persistence_diagram_location,
-                re_compute=re_compute
+                re_compute=re_compute,
+                neurite_type=NeuriteType.BASAL_DENDRITE
             )
 
     def run(self) -> EmbeddingPipeline:

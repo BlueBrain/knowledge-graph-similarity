@@ -1,11 +1,13 @@
 import numpy as np
 from tmd.Topology import vectorizations
-
+import base64
+import struct
 
 class Vectorisation:
 
     PERSISTENCE_IMAGE_RESOLUTION = 100
     FLATTEN_NORMALIZE = True
+    BASE64 = False
 
     @staticmethod
     def diagram_to_persistence_points(diagram):
@@ -75,7 +77,20 @@ class Vectorisation:
 
             normalized = temp/temp.max()  # should occur in image_diff_data
             normalized_flattened = list(normalized.flatten())
-            return normalized_flattened
+
+            if not Vectorisation.BASE64:
+                return normalized_flattened
+
+            bytes_array = bytearray()
+
+            for f in normalized_flattened:
+                bytes_array.extend(struct.pack('f', f))
+
+            val_encoded = base64.b64encode(bytes_array)
+
+            return str(val_encoded, "utf-8")
+
+            # return str(base64.b64encode(struct.pack(f'{len(normalized_flattened)}f', *normalized_flattened)), "utf-8")
 
         return fc
 
