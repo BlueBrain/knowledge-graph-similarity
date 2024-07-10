@@ -1,6 +1,7 @@
 {
     "id": x.boosting_factor_id
     "type": "SimilarityBoostingFactor"
+    "name": f"Similarity Boosting Factor for embedding {x.entity_id.split('/')[-1]} with value {x.boosting_value}"
     "value": x.boosting_value
     "unitCode": "dimensionless"
     "scriptScore": x.formula_str

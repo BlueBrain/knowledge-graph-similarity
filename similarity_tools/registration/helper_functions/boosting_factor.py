@@ -144,6 +144,7 @@ def register_boosting_factors(
     """
 
     mapping = DictionaryMapping.load(mapping_path)
+    boosting_factor_schema = forge._model.schema_id(Types.EMBEDDING)
 
     new_boosting_factors: List[Resource] = []
     updated_boosting_factors: List[Resource] = []
@@ -176,8 +177,8 @@ def register_boosting_factors(
 
             new_boosting_factors.append(created_boosting_resource)
 
-    _persist(new_boosting_factors, True, forge=forge, tag=boosting_tag, obj_str="boosting factors")
-    _persist(updated_boosting_factors, False, forge=forge, tag=boosting_tag,
+    _persist(new_boosting_factors, True, schema_id=boosting_factor_schema, forge=forge, tag=boosting_tag, obj_str="boosting factors")
+    _persist(updated_boosting_factors, False, schema_id=boosting_factor_schema, forge=forge, tag=boosting_tag,
              obj_str="boosting factors")
 
 

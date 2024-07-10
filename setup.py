@@ -4,8 +4,8 @@ from setuptools import setup, find_packages
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 
-GITLAB_USERNAME = "mouffok"
-GITLAB_TOKEN = "6Nset22xNB-qiLfsTvtu"
+GITLAB_USERNAME = os.environ.get("GITLAB_USERNAME")
+GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN")
 
 # Get the long description from the README file.
 with open(os.path.join(HERE, "README.md"), encoding="utf-8") as f:
@@ -31,7 +31,7 @@ setup(
     ],
     install_requires=[
         f"inference_tools@git+https://{GITLAB_USERNAME}:{GITLAB_TOKEN}@bbpgitlab.epfl.ch/dke/apps/kg-inference@v0.1.2",
-        "bluegraph@git+https://github.com/BlueBrain/BlueGraph@pandas_update_rm",
+        "bluegraph@git+https://github.com/BlueBrain/BlueGraph",
         "neurom",
         "tmd"
     ],

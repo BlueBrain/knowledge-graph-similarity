@@ -1,6 +1,7 @@
 {
     "id": x.stat_id
     "type": "ElasticSearchViewStatistics"
+    "name": f"ElasticSearch View Statistics of view {x.view_id.split('/')[-1]}"
     "boosted": x.boosted
     "scriptScore": x.formula_value
     "series": x.series

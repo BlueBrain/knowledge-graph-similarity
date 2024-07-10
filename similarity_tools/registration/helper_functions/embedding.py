@@ -179,6 +179,7 @@ def register_embeddings(
     """
 
     mapping = DictionaryMapping.load(mapping_path)
+    embedding_schema = forge_data._model.schema_id(Types.EMBEDDING)
 
     new_embeddings: List[Resource] = []
     updated_embeddings: List[Resource] = []
@@ -223,8 +224,8 @@ def register_embeddings(
             )
             new_embeddings.append(created)
 
-    _persist(new_embeddings, True, forge=forge_push, tag=embedding_tag, obj_str="embeddings")
-    _persist(updated_embeddings, False, forge=forge_push, tag=embedding_tag, obj_str="embeddings")
+    _persist(new_embeddings, True, schema_id=embedding_schema, forge=forge_push, tag=embedding_tag, obj_str="embeddings")
+    _persist(updated_embeddings, False, schema_id=embedding_schema, forge=forge_push, tag=embedding_tag, obj_str="embeddings")
 
     vector_dimension = len(list(vectors.values())[0])
 

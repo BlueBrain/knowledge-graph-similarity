@@ -49,7 +49,7 @@ def _get_agent(forge) -> Resource:
         forge.from_json(agent_data),
         keep=["name", "email", "sub", "preferred_username"]
     )
-    agent.id = agent.sub
+    agent.id = f"{forge._store.endpoint}/realms/bbp/users/{agent.preferred_username}"
     agent.type = "Person"
     return agent
 
@@ -57,17 +57,16 @@ def _get_agent(forge) -> Resource:
 def add_contribution(resource: Dataset, forge: KnowledgeGraphForge) -> Dataset:
     resource.add_contribution(_get_agent(forge), versioned=False)
     role = forge.from_json({
-        "hadRole": {
             "id": "http://purl.obolibrary.org/obo/CRO_0000064",
             "label": "software engineering role"
-        }
     })
     resource.contribution.hadRole = role
     return resource
 
 
 def _persist(
-        entities: List[Resource], creation: bool, forge: KnowledgeGraphForge, tag: Optional[str], obj_str: str
+        entities: List[Resource], creation: bool, schema_id: str,
+        forge: KnowledgeGraphForge, tag: Optional[str], obj_str: str
 ):
     verb_a, verb_b, verb_c = \
         ("creating", "created", "create") if creation else ("updating", "updated", "update")
@@ -76,7 +75,7 @@ def _persist(
         logger.info(f">  {verb_a.capitalize()} {obj_str}: {len(entities)}")
         fc: Callable[[List[Resource]], None] = forge.register if creation else forge.update
 
-        fc(entities)
+        fc(entities, schema_id=schema_id)
         success = all([e._last_action.succeeded for e in entities])
 
         if success:
