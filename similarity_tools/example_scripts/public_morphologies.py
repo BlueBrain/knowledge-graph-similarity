@@ -11,13 +11,12 @@ from similarity_tools.registration.step import Step
 from similarity_tools.building.model_descriptions.model_desc_list_no_class import \
     unscaled_model_description
 from similarity_tools.building.model_impl.tmd_model.vectorisation import Vectorisation
-from similarity_tools.helpers.bucket_configuration import NexusBucketConfiguration, Deployment
 
 from similarity_tools.building.model_impl.tmd_model.tmd_model import TMDModelNew, \
     VectorisationTechnique
 
 from similarity_tools.building.model_impl.tmd_model.persistence_diagram.persistence_diagram import NeuriteType
-    
+
 from similarity_tools.building.model_descriptions.model_desc_list_no_class import new_tmd_model_description
 
 from tmd.Topology.vectorizations import get_limits
@@ -42,7 +41,7 @@ public_morphos = NexusBucketConfiguration(
 #             neurite_type=NeuriteType.BASAL_DENDRITE
 #         )
 
-new_tmd_model_description.filename = f"morph_TMD_image_data_base64_100"
+new_tmd_model_description.filename = "morph_TMD_image_data_base64_100"
 # new_tmd_model_description.model = new_model
 #
 Vectorisation.BASE64 = True
@@ -50,7 +49,7 @@ Vectorisation.BASE64 = True
 # # list_of_ph = [ [e for e in list(new_model.nm_persistence_diagrams.values())] ]
 # list_of_ph = [
 #     e
-#     for morphology_tmd in [new_model] 
+#     for morphology_tmd in [new_model]
 #     for e in list(morphology_tmd.nm_persistence_diagrams.values())
 # ]
 
@@ -64,9 +63,8 @@ Vectorisation.BASE64 = True
 #         )
 
 # e = ModelRegistrationPipeline.get_step(Step.SAVE_MODEL).run(
-#     model_description=new_tmd_model_description, model_data=model_data_nm,
-#     pipeline=pipeline
-# )
+#           model_description=new_tmd_model_description, model_data=model_data_nm,
+#           pipeline=pipeline)
 # print(e)
 
 # OUTPUT PATH:
@@ -77,8 +75,8 @@ Vectorisation.BASE64 = True
 new_tmd_model_description.filename = "morph_TMD_image_data_base64_100_public_morphologies_production"
 
 # e = ModelRegistrationPipeline.get_step(Step.REGISTER_MODEL).run(
-#     model_description=new_tmd_model_description,
-#     model_bc=public_morphos
+#           model_description=new_tmd_model_description,
+#           model_bc=public_morphos
 # )
 # print(e)
 
@@ -232,7 +230,7 @@ for bc in buckets:
         deployment=deployment,
         boosting_tag=boosting_tag
     )
-    
+
     print("boosting_view_id: ", boosting_view_id)
     boosting_view_ids.append((bc, boosting_view_id))
 # OUTPUT Boosting view:

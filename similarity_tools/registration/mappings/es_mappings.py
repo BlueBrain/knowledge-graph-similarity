@@ -64,7 +64,7 @@ SIMILARITY_VIEW_BINARY_MAPPING = {
                 "entity": {
                     "properties": {
                         "@id": {
-                        "type": "keyword"
+                            "type": "keyword"
                         },
                         "@type": {
                             "type": "keyword"
@@ -100,7 +100,7 @@ SIMILARITY_VIEW_BINARY_MAPPING = {
                 }
             },
             "type": "nested"
-      }
+        }
     }
   }
 
@@ -210,6 +210,7 @@ def get_es_view_mappings(dimension):
     mapping = copy.deepcopy(SIMILARITY_VIEW_MAPPING)
     mapping["properties"]["embedding"]["dims"] = dimension
     return mapping
+
 
 def get_es_view_binary_mappings():
     mapping = copy.deepcopy(SIMILARITY_VIEW_BINARY_MAPPING)
