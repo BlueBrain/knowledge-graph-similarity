@@ -15,8 +15,6 @@ def create_es_view(
         mapping: Optional[Dict] = None,
         resource_tag: str = None
 ) -> Dict:
-    print("mapping: ")
-    print(json.dumps(mapping, indent=4))
     payload = {
         "@id": es_view_id,
         "@type": ["View", "ElasticSearchView"],
