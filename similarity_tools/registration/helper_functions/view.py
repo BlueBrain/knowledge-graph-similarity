@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import quote_plus as url_encode
 import requests
+import json
 
 from similarity_tools.helpers.bucket_configuration import NexusBucketConfiguration
 from inference_tools.nexus_utils.delta_utils import DeltaUtils
@@ -14,6 +15,8 @@ def create_es_view(
         mapping: Optional[Dict] = None,
         resource_tag: str = None
 ) -> Dict:
+    print("mapping: ")
+    print(json.dumps(mapping, indent=4))
     payload = {
         "@id": es_view_id,
         "@type": ["View", "ElasticSearchView"],
@@ -28,7 +31,7 @@ def create_es_view(
           f"/{url_encode(bucket_configuration.project)}"
 
     return DeltaUtils.check_response(
-        requests.post(url=url, headers=DeltaUtils.make_header(token), json=payload)
+       requests.post(url=url, headers=DeltaUtils.make_header(token), json=payload)
     )
 
 

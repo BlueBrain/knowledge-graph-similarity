@@ -100,7 +100,8 @@ def register_stats(
         stats_resource = forge.map(json_data, mapping)
         stats_resource.generation.activity.wasAssociatedWith = get_wasAssociatedWith(bluegraph=False)
 
-        stats_schema = forge._model.schema_id(Types.ES_VIEW_STATS)
+        stats_schema = forge._model.schema_id(Types.ES_VIEW_STATS.value)
+        print(stats_resource)
 
         forge.register(stats_resource, schema_id=stats_schema)
 

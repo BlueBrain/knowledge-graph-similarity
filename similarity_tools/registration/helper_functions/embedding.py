@@ -179,7 +179,7 @@ def register_embeddings(
     """
 
     mapping = DictionaryMapping.load(mapping_path)
-    embedding_schema = forge_data._model.schema_id(Types.EMBEDDING)
+    embedding_schema = forge_data._model.schema_id(Types.EMBEDDING.value)
 
     new_embeddings: List[Resource] = []
     updated_embeddings: List[Resource] = []
