@@ -3,16 +3,12 @@ from setuptools import setup, find_packages
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
-
-GITLAB_USERNAME = os.environ.get("GITLAB_USERNAME")
-GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN")
-
 # Get the long description from the README file.
 with open(os.path.join(HERE, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="similarity_tools",
+    name="knowledge-graph-similarity",
     author="Blue Brain Project, EPFL",
     use_scm_version={
         "relative_to": __file__,
@@ -30,7 +26,7 @@ setup(
         "setuptools_scm",
     ],
     install_requires=[
-        f"inference_tools@git+https://{GITLAB_USERNAME}:{GITLAB_TOKEN}@bbpgitlab.epfl.ch/dke/apps/kg-inference@v0.1.2",
+        f"knowledge-graph-inference",
         "bluegraph@git+https://github.com/BlueBrain/BlueGraph",
         "neurom",
         "tmd"

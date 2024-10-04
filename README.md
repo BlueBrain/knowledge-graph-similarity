@@ -1,4 +1,4 @@
-# KG Inference Similarity
+# knowledge-graph-similarity
 
 Set of tools in order to create the data necessary for similarity-based inference rules
 
