@@ -12,6 +12,7 @@
         }
     }
     "generation": {
+        "type": "Generation"
         "activity": {
             "wasAssociatedWith": None
         }

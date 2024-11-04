@@ -90,7 +90,7 @@ def register_model_embeddings(
         else:
             logger.info("1. Model provided")
 
-        model_revision = model._store_metadata.rev
+        model_revision = model._store_metadata['_rev']
         model_id = model.id
     else:
         logger.info("1. Loading model from provided path, the embeddings will not be tagged")

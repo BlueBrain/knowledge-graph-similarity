@@ -47,7 +47,7 @@ def create_model(
     """
 
     model_resource = Dataset(forge, name=name, type="EmbeddingModel", description=description)
-    model_schema = forge._model.schema_id(Types.EMBEDDING_MODEL)
+    model_schema = forge._model.schema_id(Types.EMBEDDING_MODEL.value)
     model_resource.id = create_id_with_forge(forge)
     model_resource.prefLabel = pref_label
     model_resource.similarity = distance_metric
@@ -77,7 +77,7 @@ def update_model(
         content_type: str
 ) -> Resource:
 
-    model_schema = forge._model.schema_id(Types.EMBEDDING_MODEL)
+    model_schema = forge._model.schema_id(Types.EMBEDDING_MODEL.value)
 
     # TODO should only update the distribution or also more?
     model_resource.vectorDimension = vector_dimension

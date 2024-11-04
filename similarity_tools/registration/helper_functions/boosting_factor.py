@@ -144,7 +144,7 @@ def register_boosting_factors(
     """
 
     mapping = DictionaryMapping.load(mapping_path)
-    boosting_factor_schema = forge._model.schema_id(Types.EMBEDDING)
+    boosting_factor_schema = forge._model.schema_id(Types.EMBEDDING.value)
 
     new_boosting_factors: List[Resource] = []
     updated_boosting_factors: List[Resource] = []
