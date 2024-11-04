@@ -66,6 +66,59 @@ SIMILARITY_VIEW_MAPPING = {
     }
 }
 
+SIMILARITY_VIEW_BINARY_MAPPING = {
+    "properties": {
+        "@id": {
+            "type": "keyword"
+        },
+        "@type": {
+            "type": "keyword"
+        },
+        "derivation": {
+            "properties": {
+                "entity": {
+                    "properties": {
+                        "@id": {
+                            "type": "keyword"
+                        },
+                        "@type": {
+                            "type": "keyword"
+                        }
+                    },
+                    "type": "nested"
+                }
+            },
+            "type": "nested"
+        },
+        "embedding": {
+            "doc_values": True,
+            "store": True,
+            "type": "binary"
+        },
+        "generation": {
+            "properties": {
+                "activity": {
+                    "properties": {
+                        "used": {
+                            "properties": {
+                                "@id": {
+                                    "type": "keyword"
+                                },
+                                "@type": {
+                                    "type": "keyword"
+                                }
+                            },
+                            "type": "nested"
+                        }
+                    },
+                    "type": "nested"
+                }
+            },
+            "type": "nested"
+        }
+    }
+  }
+
 BOOSTING_VIEW_MAPPING = {
     "properties": {
         "@id": {
@@ -171,4 +224,9 @@ STATS_VIEW_MAPPING = {
 def get_es_view_mappings(dimension):
     mapping = copy.deepcopy(SIMILARITY_VIEW_MAPPING)
     mapping["properties"]["embedding"]["dims"] = dimension
+    return mapping
+
+
+def get_es_view_binary_mappings():
+    mapping = copy.deepcopy(SIMILARITY_VIEW_BINARY_MAPPING)
     return mapping
