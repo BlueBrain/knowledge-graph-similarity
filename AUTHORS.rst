@@ -1,4 +1,4 @@
-Sarah Mouffok (maintainer)
-Eugenia Oshurko
-Cristina Elizabeth Gonzalez Espinoza
-Mohameth François Sy
+- Sarah Mouffok (maintainer)
+- Eugenia Oshurko
+- Cristina Elizabeth Gonzalez Espinoza
+- Mohameth François Sy

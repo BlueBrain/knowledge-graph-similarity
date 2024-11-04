@@ -1,4 +1,17 @@
-from typing import List
+# This file is part of knowledge-graph-similarity.
+# Copyright 2024 Blue Brain Project / EPFL
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import numpy as np
 import pandas as pd
@@ -7,9 +20,11 @@ from bluegraph.preprocess import ScikitLearnPGEncoder
 from bluegraph.downstream import EmbeddingPipeline
 from bluegraph.downstream.similarity import (FaissSimilarityIndex, SimilarityProcessor)
 
+from similarity_tools.building.model_data_impl.neuron_morphologies_load import NeuronMorphologiesLoad
 from similarity_tools.data_classes.model import Model
 from similarity_tools.building.model_data_impl.neuron_morphologies import \
-    NeuronMorphologies, NeuronMorphologiesLoad
+    NeuronMorphologies
+from similarity_tools.helpers.bucket_configuration import NexusBucketConfiguration, Deployment
 from similarity_tools.helpers.logger import logger
 
 
@@ -143,6 +158,9 @@ class NeuriteModel(Model):
 
 if __name__ == "__main__":
     a = NeuronMorphologiesLoad(
-        org="bbp-external", project="seu", save_dir="../model_data_impl/test"
+        bucket_configuration=NexusBucketConfiguration(
+            organisation="bbp-external", project="seu", deployment=Deployment.PRODUCTION
+        ),
+        save_dir="../model_data_impl/test"
     )
     e = NeuriteModel(a).run()
